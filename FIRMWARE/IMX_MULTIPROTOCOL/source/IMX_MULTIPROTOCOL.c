@@ -44,6 +44,9 @@
 #include "clock_config.h"
 #include "board.h"
 #include "IMX_MULTIPROTOCOL_usb.h"
+#include "IMX_MULTIPROTOCOL_gpio.h"
+#include "IMX_MULTIPROTOCOL_gpt.h"
+#include "IMX_MULTIPROTOCOL_ledmanager.h"
 
 int main(void)
 {
@@ -51,12 +54,16 @@ int main(void)
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-
-    USBInit();
+    GpioInit();
+    GptInit();
+    ErrorCodeSet(3);
+    //USBInit();
 
     while (1)
     {
-    	UsbVcpTask();
+    	LedManager();
+    	//__WFI();
+    	//UsbVcpTask();
     }
 }
 

@@ -6,6 +6,7 @@
  */
 
 #include "IMX_MULTIPROTOCOL_usb.h"
+#include "IMX_MULTIPROTOCOL_buffers_manager.h"
 
 /*******************************************************************************
  * Variables
