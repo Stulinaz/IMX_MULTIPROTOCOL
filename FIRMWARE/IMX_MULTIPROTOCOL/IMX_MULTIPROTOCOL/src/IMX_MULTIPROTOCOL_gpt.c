@@ -39,6 +39,12 @@ uint32_t GetTick(void)
 	return tick_cnt;
 }
 
+void Delay(uint32_t ms_wait)
+{
+	uint32_t ticks =  GetTick();
+	while( !((GetTick() - ticks) >= ms_wait) );
+}
+
 void EXAMPLE_GPT_IRQHandler(void)
 {
     /* Clear interrupt flag.*/

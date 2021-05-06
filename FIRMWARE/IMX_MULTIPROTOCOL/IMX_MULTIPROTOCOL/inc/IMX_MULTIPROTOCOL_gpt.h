@@ -18,5 +18,6 @@
 
 void GptInit(void);
 uint32_t GetTick(void);
+void Delay(uint32_t ms_wait);
 
 #endif /* IMX_MULTIPROTOCOL_GPT_H_ */

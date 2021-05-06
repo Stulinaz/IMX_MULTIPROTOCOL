@@ -9,6 +9,7 @@
 #define INC_IMX_MULTIPROTOCOL_BUFFERS_MANAGER_H_
 
 #include <stdint.h>
+#include "IMX_MULTIPROTOCOL_definitions.h"
 
 #define SERIAL_TX_BUFF_DIM 100
 #define SERIAL_RX_BUFF_DIM 100
@@ -35,13 +36,13 @@ SPI_INTERFACE,
 USB_INTERFACE
 }comm_inerface_t;
 
-extern comm_index_t ser_comm_type;
+extern volatile comm_index_t ser_comm_type;
 extern uint8_t ser_tx_buff[];
 extern uint8_t ser_rx_buff[];
-extern comm_index_t i2c_comm_type;
+extern volatile comm_index_t i2c_comm_type;
 extern uint8_t i2c_tx_buff[];
 extern uint8_t i2c_rx_buff[];
-extern comm_index_t usb_comm_type;
+extern volatile comm_index_t usb_comm_type;
 extern uint8_t usb_tx_buff[];
 extern uint8_t usb_rx_buff[];
 
@@ -50,5 +51,10 @@ uint8_t getbyte(comm_inerface_t comm_type, uint8_t * const data);
 uint16_t data_avail(comm_inerface_t comm_type);
 uint16_t data_toprocess(comm_inerface_t comm_type);
 void clear_buff(comm_inerface_t comm_type);
+void USB_set_rx_data_len(uint16_t len);
+uint16_t USB_get_rx_data_len(void);
+void UsbPrintString(const char *buff, _bool append_newline);
+void SerialTransfer(void);
+void SerialToUsb(void);
 
 #endif /* INC_IMX_MULTIPROTOCOL_BUFFERS_MANAGER_H_ */

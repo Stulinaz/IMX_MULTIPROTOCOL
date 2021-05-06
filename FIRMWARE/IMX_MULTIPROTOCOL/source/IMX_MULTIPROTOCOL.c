@@ -47,7 +47,8 @@
 #include "IMX_MULTIPROTOCOL_gpio.h"
 #include "IMX_MULTIPROTOCOL_gpt.h"
 #include "IMX_MULTIPROTOCOL_ledmanager.h"
-
+#include "IMX_MULTIPROTOCOL_lpuart.h"
+#include "IMX_MULTIPROTOCOL_buffers_manager.h"
 int main(void)
 {
     BOARD_ConfigMPU();
@@ -57,13 +58,24 @@ int main(void)
     GpioInit();
     GptInit();
     ErrorCodeSet(3);
-    //USBInit();
+
+    LpuartInit();
+    USBInit();
 
     while (1)
     {
+    	//UsbPrintString("Slave address set", 1);
+//    	putbyte(SER_INTERFACE, 0x55);
+//    	putbyte(SER_INTERFACE, 0x55);
+//    	putbyte(SER_INTERFACE, 0x55);
+//    	putbyte(SER_INTERFACE, 0x55);
+//    	putbyte(SER_INTERFACE, 0x55);
+//    	SerStartTransmit();
+
+    	Delay(1000);
     	LedManager();
     	//__WFI();
-    	//UsbVcpTask();
+    	UsbVcpTask();
     }
 }
 
