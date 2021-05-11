@@ -1,10 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_gpt.h
- *
- *  Created on: 27 apr 2021
- *      Author: Enrico
- */
-
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #ifndef IMX_MULTIPROTOCOL_GPT_H_
 #define IMX_MULTIPROTOCOL_GPT_H_
 

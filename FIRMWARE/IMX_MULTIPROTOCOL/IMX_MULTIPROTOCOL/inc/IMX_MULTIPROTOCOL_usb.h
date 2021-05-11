@@ -1,10 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_usb.h
- *
- *  Created on: 4 mag 2021
- *      Author: Enrico
- */
-
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #ifndef IMX_MULTIPROTOCOL_USB_H_
 #define IMX_MULTIPROTOCOL_USB_H_
 

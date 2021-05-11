@@ -49,33 +49,46 @@
 #include "IMX_MULTIPROTOCOL_ledmanager.h"
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
+#include "IMX_MULTIPROTOCOL_app.h"
+
 int main(void)
 {
+	//uint32_t x ;
     BOARD_ConfigMPU();
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
     GpioInit();
     GptInit();
-    ErrorCodeSet(3);
+    ErrorCodeSet(2);
 
     LpuartInit();
-    USBInit();
-
+    //USBInit();
+//    __NVIC_SetPriority(USB_OTG1_IRQn, 1);
+   // __NVIC_SetPriority(GPT2_IRQn, 5);
+    //__NVIC_SetPriority(LPUART2_IRQn, 4);
+//    x = __NVIC_GetPriority( USB_OTG1_IRQn);
+//    x = __NVIC_GetPriority( GPT2_IRQn);
+//    x = __NVIC_GetPriority( LPUART2_IRQn);
     while (1)
     {
-    	//UsbPrintString("Slave address set", 1);
-//    	putbyte(SER_INTERFACE, 0x55);
-//    	putbyte(SER_INTERFACE, 0x55);
-//    	putbyte(SER_INTERFACE, 0x55);
-//    	putbyte(SER_INTERFACE, 0x55);
 //    	putbyte(SER_INTERFACE, 0x55);
 //    	SerStartTransmit();
 
-    	Delay(1000);
+    	//SerialTransfer();
+    	while(1)
+    	{
+    	GPIO_PinWrite(GPIO1, 15 , RESET);
+    	GPIO_PinWrite(GPIO1, 23 , RESET);
+    	Delay(100);
+    	GPIO_PinWrite(GPIO1, 15 , SET);
+    	GPIO_PinWrite(GPIO1, 23 , SET);
+    	Delay(100);
+    	}
+    	DecodeFromPc();
     	LedManager();
     	//__WFI();
-    	UsbVcpTask();
+    	//UsbVcpTask();
     }
 }
 

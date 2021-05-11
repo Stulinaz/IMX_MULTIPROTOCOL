@@ -1,14 +1,16 @@
 /*
- * IMX_MULTIPROTOCOL_ledmanager.c
- *
- *  Created on: 6 mag 2021
- *      Author: Enrico
- */
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 
 #include "IMX_MULTIPROTOCOL_ledmanager.h"
 #include "IMX_MULTIPROTOCOL_gpio.h"
 #include "IMX_MULTIPROTOCOL_gpt.h"
 #include "IMX_MULTIPROTOCOL_definitions.h"
+#include "IMX_MULTIPROTOCOL_buffers_manager.h"
 
 typedef enum
 {
@@ -25,11 +27,46 @@ typedef struct{
 }led_error_manager;
 
 static void LedErrorManager(void);
+
 static led_error_manager display_error = {0, 0, 0, ERR_NO_ERROR};
+static comm_inerface_t visualize_trasnfer = USB_INTERFACE;
 
 void LedManager(void)
 {
 	LedErrorManager();
+}
+
+void LedInterfaceSel(command_t cmd)
+{
+	switch(cmd)
+	{
+		case USER_SERIAL_INTERFACE_SELECTED:
+		{
+			visualize_trasnfer = SER_INTERFACE;
+//			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , SET);
+//			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , RESET);
+//			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , RESET);
+			break;
+		}
+		case USER_I2C_INTERFACE_SELECTED:
+		{
+			visualize_trasnfer = I2C_INTERFACE;
+//			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , RESET);
+//			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , SET);
+//			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , RESET);
+			break;
+		}
+		case USER_SPI_INTERFACE_SELECTED:
+		{
+			visualize_trasnfer = SPI_INTERFACE;
+//			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , RESET);
+//			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , RESET);
+//			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , SET);
+			break;
+		}
+		default:
+			break;
+	}
 }
 
 void ErrorCodeSet(uint8_t err_num)

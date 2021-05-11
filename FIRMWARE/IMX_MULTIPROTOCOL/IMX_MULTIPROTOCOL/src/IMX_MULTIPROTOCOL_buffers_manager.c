@@ -1,10 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_buffers_manager.c
- *
- *  Created on: 6 mag 2021
- *      Author: Enrico
- */
-
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_usb.h"
@@ -25,13 +25,13 @@ uint8_t usb_rx_buff[USB_RX_BUFF_DIM];
 static void interface_selection (comm_inerface_t type_t);
 
 volatile comm_index_t ser_comm_type = { 0, 0, 0, 0, SERIAL_TX_BUFF_DIM, SERIAL_RX_BUFF_DIM };
-volatile comm_index_t spi_comm_type = { 0, 0, 0, 0, 0, 0};
-volatile comm_index_t i2c_comm_type = { 0, 0, 0, 0,  I2C_TX_BUFF_DIM, I2C_RX_BUFF_DIM};
+comm_index_t spi_comm_type = { 0, 0, 0, 0, 0, 0};
+comm_index_t i2c_comm_type = { 0, 0, 0, 0,  I2C_TX_BUFF_DIM, I2C_RX_BUFF_DIM};
 volatile comm_index_t usb_comm_type = { 0, 0, 0, 0,  USB_TX_BUFF_DIM, USB_RX_BUFF_DIM};
 
-comm_index_t *idx_strct_ptr;
-uint8_t      *buff_tx_ptr;
-uint8_t      *buff_rx_ptr;
+volatile comm_index_t *idx_strct_ptr;
+volatile uint8_t      *buff_tx_ptr;
+volatile uint8_t      *buff_rx_ptr;
 
 static void interface_selection (comm_inerface_t type_t)
 {
@@ -92,20 +92,23 @@ uint8_t getbyte(comm_inerface_t comm_type, uint8_t * const data)
 		idx_strct_ptr->rx_buff_read_index++;
 		if (idx_strct_ptr->rx_buff_write_index == idx_strct_ptr->rx_buff_read_index)
 		{
-			idx_strct_ptr->rx_buff_write_index = 0;
-			idx_strct_ptr->rx_buff_read_index  = 0;
+			if(comm_type != USB_INTERFACE)
+			{
+				idx_strct_ptr->rx_buff_write_index = 0;
+				idx_strct_ptr->rx_buff_read_index  = 0;
+			}
 		}
 	}
 	return stat;
 }
 
-uint16_t data_avail(comm_inerface_t comm_type)
+uint32_t data_avail(comm_inerface_t comm_type)
 {
 	interface_selection (comm_type);
 	return idx_strct_ptr->rx_buff_write_index;
 }
 
-uint16_t data_toprocess(comm_inerface_t comm_type)
+uint32_t data_toprocess(comm_inerface_t comm_type)
 {
 	interface_selection (comm_type);
 	return  idx_strct_ptr->tx_buff_write_index;
@@ -124,7 +127,7 @@ void USB_set_rx_data_len(uint16_t len)
 	idx_strct_ptr->rx_buff_write_index = len;
 }
 
-uint16_t USB_get_rx_data_len(void)
+uint32_t USB_get_rx_data_len(void)
 {
 	interface_selection (USB_INTERFACE);
 	return idx_strct_ptr->rx_buff_write_index;
@@ -156,12 +159,20 @@ void UsbPrintString(const char *buff, _bool append_newline)
 
 void SerialTransfer(void)
 {
-	uint16_t data_len;
-	uint8_t i;
-	data_len = USB_get_rx_data_len();
-	for(i=0; i<data_len; i++)
-		putbyte(SER_INTERFACE, usb_tx_buff[i]);
-	SerStartTransmit();
+	uint32_t data_len, i;
+	uint8_t byte;
+	data_len = data_avail(USB_INTERFACE);
+	if(data_len)
+	{
+		for(i=0; i<data_len; i++)
+		{
+			byte = usb_rx_buff[i];
+			putbyte(SER_INTERFACE,byte);
+		}
+		UsbPrintString("Hit", TRUE);
+		SerStartTransmit();
+		usb_comm_type.rx_buff_write_index = 0;
+	}
 }
 
 void SerialToUsb(void)

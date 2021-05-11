@@ -1,10 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_usb.c
- *
- *  Created on: 4 mag 2021
- *      Author: Enrico
- */
-
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #include "IMX_MULTIPROTOCOL_usb.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_definitions.h"
@@ -47,6 +47,7 @@ static uint8_t s_countryCode[COMM_FEATURE_DATA_SIZE] = {(COUNTRY_SETTING >> 0U) 
 /* CDC ACM information */
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static usb_cdc_acm_info_t s_usbCdcAcmInfo;
 /* Data buffer for receiving and sending*/
+
 #ifndef USB_TEST
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_currRecvBuf[DATA_BUFF_SIZE];
 USB_DMA_NONINIT_DATA_ALIGN(USB_DATA_ALIGN_SIZE) static uint8_t s_currSendBuf[DATA_BUFF_SIZE];
@@ -163,7 +164,7 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
                                                  g_UsbDeviceCdcVcomDicEndpoints[0].maxPacketSize);
                 }
 				#else
-                usb_comm_type.rx_buff_write_index = (uint16_t) epCbParam->length;
+                usb_comm_type.rx_buff_write_index = epCbParam->length;
                 if (!usb_comm_type.rx_buff_write_index)
                 {
                     /* Schedule buffer for next receive event */
@@ -502,7 +503,7 @@ void UsbVcpTask(void)
         /* endpoint callback length is USB_CANCELLED_TRANSFER_LENGTH (0xFFFFFFFFU) when transfer is canceled */
         if ((0 != usb_comm_type.rx_buff_write_index) && (USB_CANCELLED_TRANSFER_LENGTH != usb_comm_type.rx_buff_write_index))
         {
-            int32_t i;
+            int32_t i ;
 
             /* Store Data into Buffer*/
             for (i = 0; i < usb_comm_type.rx_buff_write_index; i++)
@@ -511,19 +512,19 @@ void UsbVcpTask(void)
             }
             usb_comm_type.rx_buff_write_index = 0;
         }
-//
-//        if (s_sendSize)
-//        {
-//            uint32_t size = s_sendSize;
-//            s_sendSize    = 0;
-//
-//            error = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, s_currSendBuf, size);
-//
-//            if (error != kStatus_USB_Success)
-//            {
-//                /* Failure to send Data Handling code here */
-//            }
-//        }
+
+        if (usb_comm_type.tx_buff_write_index)
+        {
+            uint32_t size = usb_comm_type.tx_buff_write_index;
+            usb_comm_type.tx_buff_write_index    = 0;
+
+            error = USB_DeviceCdcAcmSend(s_cdcVcom.cdcAcmHandle, USB_CDC_VCOM_BULK_IN_ENDPOINT, usb_tx_buff, size);
+
+            if (error != kStatus_USB_Success)
+            {
+                /* Failure to send Data Handling code here */
+            }
+        }
 		#endif
     }
 }

@@ -1,14 +1,17 @@
 /*
- * IMX_MULTIPROTOCOL_lpuart.c
- *
- *  Created on: 30 apr 2021
- *      Author: Enrico
- */
-
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
+#include "IMX_MULTIPROTOCOL_definitions.h"
 
 static void LpuartInitPins(void);
+
+static lpuart_config_t config;
 
 void DEMO_LPUART_IRQHandler(void)
 {
@@ -38,12 +41,11 @@ void DEMO_LPUART_IRQHandler(void)
 				LPUART_ReadByte(DEMO_LPUART);
 		}
 	}
-	SDK_ISR_EXIT_BARRIER;
+	//SDK_ISR_EXIT_BARRIER;
 }
 
 void LpuartInit(void)
 {
-    lpuart_config_t config;
     LpuartInitPins();
     LPUART_GetDefaultConfig(&config);
     config.baudRate_Bps = 9600;
@@ -73,4 +75,39 @@ void SerStartTransmit(void)
 uint16_t data_Avail(void)
 {
 	return ser_comm_type.rx_buff_write_index;
+}
+
+uint8_t SerBaudrateSel(ser_baudrate_t baudrate)
+{
+	uint8_t stat = PASS;
+	switch(baudrate)
+	{
+		case BAUDRATE_1200:
+		config.baudRate_Bps = 1200;
+		break;
+		case BAUDRATE_4800:
+		config.baudRate_Bps = 4800;
+		break;
+		case BAUDRATE_9600:
+		config.baudRate_Bps = 9600;
+		break;
+		case BAUDRATE_19200:
+		config.baudRate_Bps = 19200;
+		break;
+		case BAUDRATE_38400:
+		config.baudRate_Bps = 38400;
+		break;
+		case BAUDRATE_57600:
+		config.baudRate_Bps = 57600;
+		break;
+		case BAUDRATE_115200:
+		config.baudRate_Bps = 115200;
+		break;
+		default:
+		/* wrong parameter.. setting to default*/
+		config.baudRate_Bps = 9600;
+		stat = FAIL;
+		break;
+	}
+	return stat;
 }

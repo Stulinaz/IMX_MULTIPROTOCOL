@@ -1,9 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_command_process.h
- *
- *  Created on: 6 mag 2021
- *      Author: Enrico
- */
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 
 #ifndef INC_IMX_MULTIPROTOCOL_COMMAND_PROCESS_H_
 #define INC_IMX_MULTIPROTOCOL_COMMAND_PROCESS_H_

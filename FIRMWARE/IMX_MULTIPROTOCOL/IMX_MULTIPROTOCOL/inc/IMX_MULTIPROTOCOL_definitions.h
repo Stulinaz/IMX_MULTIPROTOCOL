@@ -1,13 +1,14 @@
 /*
- * IMX_MULTIPROTOCOL_definitions.h
- *
- *  Created on: 6 mag 2021
- *      Author: Enrico
- */
-
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #ifndef INC_IMX_MULTIPROTOCOL_DEFINITIONS_H_
 #define INC_IMX_MULTIPROTOCOL_DEFINITIONS_H_
 
+#define NUL                   0x00
 #define TAB         (uint8_t) 0x09
 #define CR_         (uint8_t) 0x0D
 #define LF_         (uint8_t) 0x0A

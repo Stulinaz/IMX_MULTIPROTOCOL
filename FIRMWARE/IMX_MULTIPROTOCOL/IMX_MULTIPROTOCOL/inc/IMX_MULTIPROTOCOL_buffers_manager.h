@@ -1,9 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_buffers_manager.h
- *
- *  Created on: 6 mag 2021
- *      Author: Enrico
- */
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 
 #ifndef INC_IMX_MULTIPROTOCOL_BUFFERS_MANAGER_H_
 #define INC_IMX_MULTIPROTOCOL_BUFFERS_MANAGER_H_
@@ -17,14 +18,14 @@
 #define I2C_RX_BUFF_DIM    100
 #define SPI_TX_BUFF_DIM    20
 #define SPI_RX_BUFF_DIM    20
-#define USB_TX_BUFF_DIM    100
-#define USB_RX_BUFF_DIM    100
+#define USB_TX_BUFF_DIM    512
+#define USB_RX_BUFF_DIM    512
 
 typedef struct{
-uint16_t tx_buff_write_index;
-uint16_t tx_buff_read_index;
-uint16_t rx_buff_write_index;
-uint16_t rx_buff_read_index;
+uint32_t tx_buff_write_index;
+uint32_t tx_buff_read_index;
+uint32_t rx_buff_write_index;
+uint32_t rx_buff_read_index;
 uint16_t tx_max_buff_dim;
 uint16_t rx_max_buff_dim;
 }comm_index_t;
@@ -39,7 +40,7 @@ USB_INTERFACE
 extern volatile comm_index_t ser_comm_type;
 extern uint8_t ser_tx_buff[];
 extern uint8_t ser_rx_buff[];
-extern volatile comm_index_t i2c_comm_type;
+extern comm_index_t i2c_comm_type;
 extern uint8_t i2c_tx_buff[];
 extern uint8_t i2c_rx_buff[];
 extern volatile comm_index_t usb_comm_type;
@@ -48,11 +49,11 @@ extern uint8_t usb_rx_buff[];
 
 void putbyte(comm_inerface_t comm_type, uint8_t data);
 uint8_t getbyte(comm_inerface_t comm_type, uint8_t * const data);
-uint16_t data_avail(comm_inerface_t comm_type);
-uint16_t data_toprocess(comm_inerface_t comm_type);
+uint32_t data_avail(comm_inerface_t comm_type);
+uint32_t data_toprocess(comm_inerface_t comm_type);
 void clear_buff(comm_inerface_t comm_type);
 void USB_set_rx_data_len(uint16_t len);
-uint16_t USB_get_rx_data_len(void);
+uint32_t USB_get_rx_data_len(void);
 void UsbPrintString(const char *buff, _bool append_newline);
 void SerialTransfer(void);
 void SerialToUsb(void);

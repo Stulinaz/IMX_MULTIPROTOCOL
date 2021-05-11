@@ -1,9 +1,10 @@
 /*
- * IMX_MULTIPROTOCOL_gpt.c
- *
- *  Created on: 27 apr 2021
- *      Author: Enrico
- */
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 #include "IMX_MULTIPROTOCOL_gpt.h"
 
 #ifdef DEBUG_GPT
@@ -15,7 +16,6 @@ void GptInit(void)
 {
     uint32_t gptFreq;
     gpt_config_t gptConfig;
-
     GPT_GetDefaultConfig(&gptConfig);
     /* Initialize GPT module */
     GPT_Init(EXAMPLE_GPT, &gptConfig);
