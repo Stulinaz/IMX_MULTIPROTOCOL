@@ -25,9 +25,9 @@ uint8_t usb_rx_buff[USB_RX_BUFF_DIM];
 static void interface_selection (comm_inerface_t type_t);
 
 volatile comm_index_t ser_comm_type = { 0, 0, 0, 0, SERIAL_TX_BUFF_DIM, SERIAL_RX_BUFF_DIM };
-comm_index_t spi_comm_type = { 0, 0, 0, 0, 0, 0};
-comm_index_t i2c_comm_type = { 0, 0, 0, 0,  I2C_TX_BUFF_DIM, I2C_RX_BUFF_DIM};
-volatile comm_index_t usb_comm_type = { 0, 0, 0, 0,  USB_TX_BUFF_DIM, USB_RX_BUFF_DIM};
+comm_index_t spi_comm_type          = { 0, 0, 0, 0, SPI_TX_BUFF_DIM   , SPI_RX_BUFF_DIM    };
+comm_index_t i2c_comm_type          = { 0, 0, 0, 0, I2C_TX_BUFF_DIM   , I2C_RX_BUFF_DIM    };
+volatile comm_index_t usb_comm_type = { 0, 0, 0, 0, USB_TX_BUFF_DIM   , USB_RX_BUFF_DIM    };
 
 volatile comm_index_t *idx_strct_ptr;
 volatile uint8_t      *buff_tx_ptr;
@@ -53,7 +53,7 @@ static void interface_selection (comm_inerface_t type_t)
 		}
 		case SPI_INTERFACE:
 		{
-			idx_strct_ptr = &i2c_comm_type;
+			idx_strct_ptr = &spi_comm_type;
 			buff_tx_ptr   = spi_tx_buff;
 			buff_rx_ptr   = spi_rx_buff;
 			break;
@@ -157,7 +157,7 @@ void UsbPrintString(const char *buff, _bool append_newline)
 	}
 }
 
-void SerialTransfer(void)
+uint32_t SetBuffer(comm_inerface_t comm_type)
 {
 	uint32_t data_len, i;
 	uint8_t byte;
@@ -167,12 +167,12 @@ void SerialTransfer(void)
 		for(i=0; i<data_len; i++)
 		{
 			byte = usb_rx_buff[i];
-			putbyte(SER_INTERFACE,byte);
+			putbyte(comm_type,byte);
 		}
-		UsbPrintString("Hit", TRUE);
-		SerStartTransmit();
-		usb_comm_type.rx_buff_write_index = 0;
+//		usb_comm_type.rx_buff_write_index = 0;
+//		usb_comm_type.rx_buff_read_index  = 0;
 	}
+	return data_len;
 }
 
 void SerialToUsb(void)
@@ -183,5 +183,6 @@ void SerialToUsb(void)
 		while( getbyte(SER_INTERFACE, &byte) )
 			putbyte(USB_INTERFACE, byte);
 		USBTransmit(usb_comm_type.tx_buff_write_index);
+		usb_comm_type.tx_buff_write_index = 0;
 	}
 }

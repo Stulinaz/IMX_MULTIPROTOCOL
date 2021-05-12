@@ -13,8 +13,6 @@ IMX RT MCU Embedded contest 2021
 
 #define INACTIVITY_TIMEOUT (uint32_t) 10000
 #define MAN_TIMEOUT        (uint32_t) 50
-#define CONNECTED          1
-#define DISCONNECTED       0
 
 typedef enum
 {
@@ -26,5 +24,6 @@ RESTART
 }command_manager_s;
 
 void DecodeFromPc(void);
+void TransferToPc(void);
 
 #endif /* INC_IMX_MULTIPROTOCOL_APP_H_ */

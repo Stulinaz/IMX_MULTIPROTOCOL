@@ -50,6 +50,7 @@
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_app.h"
+#include "IMX_MULTIPROTOCOL_lpspi.h"
 
 int main(void)
 {
@@ -60,10 +61,9 @@ int main(void)
     BOARD_InitDebugConsole();
     GpioInit();
     GptInit();
-    ErrorCodeSet(2);
 
     LpuartInit();
-    //USBInit();
+    USBInit();
 //    __NVIC_SetPriority(USB_OTG1_IRQn, 1);
    // __NVIC_SetPriority(GPT2_IRQn, 5);
     //__NVIC_SetPriority(LPUART2_IRQn, 4);
@@ -73,21 +73,24 @@ int main(void)
     while (1)
     {
 //    	putbyte(SER_INTERFACE, 0x55);
+//    	putbyte(SER_INTERFACE, 0x55);
+//    	putbyte(SER_INTERFACE, 0x55);
 //    	SerStartTransmit();
+//    	Delay(100);
 
     	//SerialTransfer();
-    	while(1)
-    	{
-    	GPIO_PinWrite(GPIO1, 15 , RESET);
-    	GPIO_PinWrite(GPIO1, 23 , RESET);
-    	Delay(100);
-    	GPIO_PinWrite(GPIO1, 15 , SET);
-    	GPIO_PinWrite(GPIO1, 23 , SET);
-    	Delay(100);
-    	}
-    	DecodeFromPc();
+//    	while(1)
+//    	{
+//    	GPIO_PinWrite(GPIO1, 15 , RESET);
+//    	GPIO_PinWrite(GPIO1, 23 , RESET);
+//    	Delay(100);
+//    	GPIO_PinWrite(GPIO1, 15 , SET);
+//    	GPIO_PinWrite(GPIO1, 23 , SET);
+//    	Delay(100);
+//    	}
     	LedManager();
-    	//__WFI();
+    	DecodeFromPc();
+    	TransferToPc();
     	//UsbVcpTask();
     }
 }

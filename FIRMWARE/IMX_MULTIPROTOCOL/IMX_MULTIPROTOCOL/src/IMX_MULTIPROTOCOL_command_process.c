@@ -19,27 +19,28 @@ const char i2c_command    [MAIN_COMMAND_DIM_SIZE] = "i2c";
 const char ser_command    [MAIN_COMMAND_DIM_SIZE] = "ser";
 
 /*options for general command*/
-const char *serial_cmd_select = " -s";
-const char *i2c_cmd_select    = " -i";
-const char *spi_cmd_select    = " -p";
-const char *help              = " -h";
-const char *transfer_start    = " -x";
+const char serial_cmd_select[] = " -s";
+const char i2c_cmd_select[]    = " -i";
+const char spi_cmd_select[]    = " -p";
+const char close[]             = " -a";
+const char help[]              = " -h";
+const char transfer_start[]    = " -x";
 
 /*options for ser command*/
-const char *serial_bausel     = " -b";
+const char serial_bausel[]     = " -b";
 
 /*options for i2c command*/
-const char *i2c_address       = " -a 0x";
+const char i2c_address[]       = " -a 0x";
 
-const char *i2c_transmitter    = " -mt";
-const char *i2c_receiver       = " -mr";
+const char i2c_transmitter[]   = " -mt";
+const char i2c_receiver[]      = " -mr";
 
-const char *i2c_access_write  = " -w 0x";
-const char *i2c_access_read   = " -r";
+const char i2c_access_write[]  = " -w 0x";
+const char i2c_access_read[]   = " -r";
 
-const char *i2c_repeat_start  = " -s";
-const char *i2c_queue_req     = " -q";
-const char *i2c_queue_delete  = " -d";
+const char i2c_repeat_start[]  = " -s";
+const char i2c_queue_req[]     = " -q";
+const char i2c_queue_delete[]  = " -d";
 
 static uint8_t CharToHex(char msb, char lsb, uint8_t *const value);
 
@@ -64,15 +65,21 @@ command_t Decode(uint16_t cmd_len, uint8_t *const param)
 		if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, help, opt_cmd_len) == 0)
 			return HELP;
 
-		/* interface selection */
+		/* serial interface selected */
 		if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, serial_cmd_select, opt_cmd_len) == 0)
 			return USER_SERIAL_INTERFACE_SELECTED;
 
+		/* i2c interface selected */
 		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, i2c_cmd_select, opt_cmd_len) == 0)
 			return USER_I2C_INTERFACE_SELECTED;
 
+		/* spi interface selected */
 		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, spi_cmd_select, opt_cmd_len) == 0)
 			return USER_SPI_INTERFACE_SELECTED;
+
+		/* communication abort */
+		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, close, opt_cmd_len) == 0)
+			return USER_COMMUNICATION_ABORT;
 
 		/* start data transfer on selected interface */
 		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, transfer_start, opt_cmd_len) == 0)
@@ -123,7 +130,6 @@ command_t Decode(uint16_t cmd_len, uint8_t *const param)
 	    if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, i2c_queue_delete, opt_cmd_len) == 0)
 	    	return USER_I2C_REQUEST_QUEUE_DELETE;
 	}
-
 	return UNKNOWN_COMMAND;
 }
 

@@ -16,6 +16,7 @@ IMX RT MCU Embedded contest 2021
 #define DEMO_LPUART_CLK_FREQ   BOARD_DebugConsoleSrcFreq()
 #define DEMO_LPUART_IRQn       LPUART2_IRQn
 #define DEMO_LPUART_IRQHandler LPUART2_IRQHandler
+#define BAUDRATE_DEFAULT       (uint32_t) 9600
 
 typedef enum{
 BAUDRATE_1200 = 0u,
@@ -28,8 +29,8 @@ BAUDRATE_115200
 }ser_baudrate_t;
 
 void LpuartInit(void);
+void LpuartStop(void);
 void SerStartTransmit(void);
-uint16_t data_Avail(void);
 uint8_t SerBaudrateSel(ser_baudrate_t baudrate);
 
 #endif /* IMX_MULTIPROTOCOL_LPUART_H_ */

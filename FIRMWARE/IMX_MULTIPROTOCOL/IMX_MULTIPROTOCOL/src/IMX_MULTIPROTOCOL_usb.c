@@ -538,3 +538,12 @@ uint8_t USBTransmit(uint16_t size)
 	}
 	return stat;
 }
+
+uint8_t USBGetStatus(void)
+{
+	if ((1 == s_cdcVcom.attach) && (1 == s_cdcVcom.startTransactions))
+		return CONNECTED;
+	else
+		return DISCONNECTED;
+}
+

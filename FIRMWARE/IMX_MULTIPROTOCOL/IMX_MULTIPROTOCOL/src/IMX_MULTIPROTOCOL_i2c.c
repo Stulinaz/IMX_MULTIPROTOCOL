@@ -116,20 +116,20 @@ uint8_t I2cTransfer(void)
 		switch(i2c_transfer.iic_queue[i])
 		{
 			case ADDRESS_TRANSFER:
-			/* Send Slave address in master trasmitter or master receiver mode*/
+			/* Send Slave address in master transmitter or master receiver mode*/
 			iic_f.TransferData(&i2c_transfer.iic_transfer_status, CMD_STARTnADDRESS_ACK, &i2c_transfer.slave_addr, i2c_transfer.data[i]);
 			break;
 
 			case BYTE_WRITE:
 			iic_f.TransferData(&i2c_transfer.iic_transfer_status, CMD_TRANSMIT, &i2c_transfer.data[i], NUL);
-			/* generate stop condition if ther are no more commands in the queue*/
+			/* generate stop condition if there are no more commands in the queue*/
 			if (i2c_transfer.iic_queue[i+1] == NO_COMMAND_SELECTED)
 				iic_f.TransferData(&i2c_transfer.iic_transfer_status, CMD_STOP, NUL, NUL);
 			break;
 
 			case BYTE_READ:
 			iic_f.TransferData(&i2c_transfer.iic_transfer_status, CMD_RECEIVE, &i2c_transfer.data[i], NUL);
-			/* generate stop condition if ther are no more commands in the queue*/
+			/* generate stop condition if there are no more commands in the queue*/
 			if (i2c_transfer.iic_queue[i+1] == NO_COMMAND_SELECTED)
 				iic_f.TransferData(&i2c_transfer.iic_transfer_status, CMD_STOP, NUL, NUL);
 			break;

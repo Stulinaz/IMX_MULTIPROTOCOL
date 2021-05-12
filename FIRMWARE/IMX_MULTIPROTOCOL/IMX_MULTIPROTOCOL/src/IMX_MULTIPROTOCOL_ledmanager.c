@@ -27,14 +27,25 @@ typedef struct{
 }led_error_manager;
 
 static void LedErrorManager(void);
+static void CommunicationLedSetTime(void);
 
 static led_error_manager display_error = {0, 0, 0, ERR_NO_ERROR};
-static comm_inerface_t visualize_trasnfer = USB_INTERFACE;
+static comm_inerface_t visualize_transfer = USB_INTERFACE;
+static uint32_t tx_led_countdown = 0;
+static uint32_t rx_led_countdown = 0;
 
+/****************************************************************************
+Function:			LedManager
+Input:				none
+Output:				none
+PreCondition:		Timer reference os systick
+Overview:			Time reference should tick every 1ms
+****************************************************************************/
 void LedManager(void)
 {
 	LedErrorManager();
 }
+
 
 void LedInterfaceSel(command_t cmd)
 {
@@ -42,26 +53,29 @@ void LedInterfaceSel(command_t cmd)
 	{
 		case USER_SERIAL_INTERFACE_SELECTED:
 		{
-			visualize_trasnfer = SER_INTERFACE;
-//			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , SET);
-//			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , RESET);
-//			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , RESET);
+			/* Serial interface selected - turn on serial led pin  - off others*/
+			visualize_transfer = SER_INTERFACE;
+			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , SET);
+			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , RESET);
+			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , RESET);
 			break;
 		}
 		case USER_I2C_INTERFACE_SELECTED:
 		{
-			visualize_trasnfer = I2C_INTERFACE;
-//			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , RESET);
-//			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , SET);
-//			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , RESET);
+			/* I2C interface selected - turn on I2C led pin - off others*/
+			visualize_transfer = I2C_INTERFACE;
+			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , RESET);
+			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , SET);
+			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , RESET);
 			break;
 		}
 		case USER_SPI_INTERFACE_SELECTED:
 		{
-			visualize_trasnfer = SPI_INTERFACE;
-//			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , RESET);
-//			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , RESET);
-//			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , SET);
+			/* SPI interface selected - turn on SPI led pin  - off others*/
+			visualize_transfer = SPI_INTERFACE;
+			GPIO_PinWrite(SERIAL_LED_GPIO_Port, SERIAL_LED_Pin , RESET);
+			GPIO_PinWrite(I2C_LED_GPIO_Port   , I2C_LED_Pin    , RESET);
+			GPIO_PinWrite(SPI_LED_GPIO_Port   , SPI_LED_Pin    , SET);
 			break;
 		}
 		default:
@@ -69,11 +83,71 @@ void LedInterfaceSel(command_t cmd)
 	}
 }
 
+static void CommunicationLedSetTime(void)
+{
+	switch(visualize_transfer)
+	{
+		case SER_INTERFACE:
+		{
+			if (data_avail(visualize_transfer) != 0)
+				tx_led_countdown = TX_LED_ON_TIME;
+			if (data_toprocess(visualize_transfer) != 0)
+				tx_led_countdown = RX_LED_ON_TIME;
+		}
+		case I2C_INTERFACE:
+		case SPI_INTERFACE:
+		break;
+		default:
+			break;
+	}
+}
+
+void CommunicationLedVisualize(void)
+{
+	CommunicationLedSetTime();
+	if ( (tx_led_countdown == 0) && (tx_led_countdown == 0) )
+	{
+		GPIO_PinWrite(TX_LED_GPIO_Port, TX_LED_Pin, RESET);
+		GPIO_PinWrite(RX_LED_GPIO_Port, RX_LED_Pin, RESET);
+		return;
+	}
+
+	if(tx_led_countdown > 0)
+	{
+		tx_led_countdown--;
+		GPIO_PinWrite(TX_LED_GPIO_Port, TX_LED_Pin, SET);
+	}
+	else
+		GPIO_PinWrite(TX_LED_GPIO_Port, TX_LED_Pin, RESET);
+
+	if(rx_led_countdown > 0)
+	{
+		GPIO_PinWrite(RX_LED_GPIO_Port, RX_LED_Pin, SET);
+		rx_led_countdown--;
+	}
+	else
+		GPIO_PinWrite(RX_LED_GPIO_Port, RX_LED_Pin, RESET);
+}
+
+/****************************************************************************
+Function:			ErrorCodeSet
+Input:				(uint8_t) Number of blinks to be displayed on EVK's LED Board
+Output:				none
+PreCondition:		none
+Overview:			Debug purpose
+****************************************************************************/
 void ErrorCodeSet(uint8_t err_num)
 {
 	display_error.err_num = err_num;
 }
 
+/****************************************************************************
+Function:			ErrorCodeSet
+Input:				(uint8_t) Number of blinks to be displayed on EVK's LED Board
+Output:				none
+PreCondition:		Timer reference os systick
+Overview:			Time reference should tick every 1ms
+****************************************************************************/
 static void LedErrorManager(void)
 {
 	switch(display_error.led_stat)

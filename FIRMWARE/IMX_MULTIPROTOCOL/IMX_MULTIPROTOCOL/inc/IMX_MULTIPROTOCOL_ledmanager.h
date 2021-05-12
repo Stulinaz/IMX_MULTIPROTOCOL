@@ -18,6 +18,7 @@ IMX RT MCU Embedded contest 2021
 #define LED_ERROR_DEAD_TIME  (uint32_t) 1500
 
 void LedManager(void);
+void CommunicationLedVisualize(void);
 void ErrorCodeSet(uint8_t err_num);
 void LedInterfaceSel(command_t cmd);
 

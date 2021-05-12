@@ -75,5 +75,6 @@ typedef struct _usb_cdc_acm_info
 void USBInit(void);
 void UsbVcpTask(void);
 uint8_t USBTransmit(uint16_t size);
+uint8_t USBGetStatus(void);
 
 #endif /* IMX_MULTIPROTOCOL_USB_H_ */

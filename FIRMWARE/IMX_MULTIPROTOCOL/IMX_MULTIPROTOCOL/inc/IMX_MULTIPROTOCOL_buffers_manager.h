@@ -12,12 +12,12 @@ IMX RT MCU Embedded contest 2021
 #include <stdint.h>
 #include "IMX_MULTIPROTOCOL_definitions.h"
 
-#define SERIAL_TX_BUFF_DIM 100
-#define SERIAL_RX_BUFF_DIM 100
-#define I2C_TX_BUFF_DIM    100
-#define I2C_RX_BUFF_DIM    100
-#define SPI_TX_BUFF_DIM    20
-#define SPI_RX_BUFF_DIM    20
+#define SERIAL_TX_BUFF_DIM 25
+#define SERIAL_RX_BUFF_DIM 25
+#define I2C_TX_BUFF_DIM    0
+#define I2C_RX_BUFF_DIM    0
+#define SPI_TX_BUFF_DIM    25
+#define SPI_RX_BUFF_DIM    25
 #define USB_TX_BUFF_DIM    512
 #define USB_RX_BUFF_DIM    512
 
@@ -40,6 +40,9 @@ USB_INTERFACE
 extern volatile comm_index_t ser_comm_type;
 extern uint8_t ser_tx_buff[];
 extern uint8_t ser_rx_buff[];
+extern comm_index_t spi_comm_type;
+extern uint8_t spi_tx_buff[];
+extern uint8_t spi_rx_buff[];
 extern comm_index_t i2c_comm_type;
 extern uint8_t i2c_tx_buff[];
 extern uint8_t i2c_rx_buff[];
@@ -55,7 +58,7 @@ void clear_buff(comm_inerface_t comm_type);
 void USB_set_rx_data_len(uint16_t len);
 uint32_t USB_get_rx_data_len(void);
 void UsbPrintString(const char *buff, _bool append_newline);
-void SerialTransfer(void);
+uint32_t SetBuffer(comm_inerface_t comm_type);
 void SerialToUsb(void);
 
 #endif /* INC_IMX_MULTIPROTOCOL_BUFFERS_MANAGER_H_ */

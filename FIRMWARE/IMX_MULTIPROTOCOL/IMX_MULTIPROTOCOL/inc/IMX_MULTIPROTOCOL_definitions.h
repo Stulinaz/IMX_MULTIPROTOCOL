@@ -12,6 +12,7 @@ IMX RT MCU Embedded contest 2021
 #define TAB         (uint8_t) 0x09
 #define CR_         (uint8_t) 0x0D
 #define LF_         (uint8_t) 0x0A
+#define SPACE       (uint8_t) 0x20
 #define END_CHAR    '\0'
 
 #define SET   1U
@@ -19,6 +20,9 @@ IMX RT MCU Embedded contest 2021
 
 #define PASS 1U
 #define FAIL 0U
+
+#define CONNECTED          1U
+#define DISCONNECTED       0U
 
 typedef enum{
 FALSE = 0,
