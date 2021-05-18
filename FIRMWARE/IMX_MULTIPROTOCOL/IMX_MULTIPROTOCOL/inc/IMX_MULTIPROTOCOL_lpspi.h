@@ -10,9 +10,6 @@ IMX RT MCU Embedded contest 2021
 #define INC_IMX_MULTIPROTOCOL_LPSPI_H_
 
 #include "fsl_lpspi.h"
-#include "fsl_iomuxc.h"
-#include "board.h"
-
 
 #define EXAMPLE_LPSPI_MASTER_BASEADDR   (LPSPI1)
 #define EXAMPLE_LPSPI_MASTER_IRQN       LPSPI1_IRQn

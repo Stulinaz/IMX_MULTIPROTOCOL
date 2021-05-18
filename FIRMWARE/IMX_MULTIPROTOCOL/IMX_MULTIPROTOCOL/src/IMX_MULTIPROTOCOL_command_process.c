@@ -44,6 +44,13 @@ const char i2c_queue_delete[]  = " -d";
 
 static uint8_t CharToHex(char msb, char lsb, uint8_t *const value);
 
+/****************************************************************************
+Function:			Decode
+Input:				cmd_len = lenght of commadn from Pc, *param = return value of some commands
+Output:				if command match return the command enum, otherwise UNKNOWN_COMMAND
+PreCondition:		USBInit()
+Overview:			Command handler
+****************************************************************************/
 command_t Decode(uint16_t cmd_len, uint8_t *const param)
 {
 	uint8_t main_command[MAIN_COMMAND_DIM_SIZE];
@@ -81,9 +88,6 @@ command_t Decode(uint16_t cmd_len, uint8_t *const param)
 		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, close, opt_cmd_len) == 0)
 			return USER_COMMUNICATION_ABORT;
 
-		/* start data transfer on selected interface */
-		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, transfer_start, opt_cmd_len) == 0)
-			return USER_TRANSFER_REQUEST;
 	}
 
 	/*serial commands*/
@@ -129,10 +133,24 @@ command_t Decode(uint16_t cmd_len, uint8_t *const param)
 
 	    if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, i2c_queue_delete, opt_cmd_len) == 0)
 	    	return USER_I2C_REQUEST_QUEUE_DELETE;
+
+		/* start data transfer on i2c interface */
+		if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, transfer_start, opt_cmd_len) == 0)
+			return USER_I2C_TRANSFER_REQUEST;
 	}
 	return UNKNOWN_COMMAND;
 }
 
+/****************************************************************************
+Function:			CharToHex
+Input:				Two byte (User - Friendly data)
+Example:            (msb ='0' lsb ='A') -> Conversion ok -> value = 10 -> return value = 0
+                    (msb ='0' lsb ='A') -> Conversion ok -> value = 10 -> return value = 0
+                    (msb ='1' lsb ='G') -> Conversion ko -> value = 0  -> return value != 0
+Output:				0 if conversion is ok, != 0 otherwise
+PreCondition:		None
+Overview:			Convert one byte of data into hexadecimal format (2byte)
+****************************************************************************/
 static uint8_t CharToHex(char msb, char lsb, uint8_t *const value)
 {
 	uint8_t i;
@@ -156,6 +174,15 @@ static uint8_t CharToHex(char msb, char lsb, uint8_t *const value)
 	return stat;
 }
 
+/****************************************************************************
+Function:			DecToChar
+Input:				byte
+Output:				User friendly data in hex format (FFh)
+Example:            Input: 255 (one byte) -> Output : FFh (two byte)
+					Input: 1  (one byte)  -> Output : 01h (two byte)
+PreCondition:		None
+Overview:			Convert one byte of data into hexadecimal format (2byte)
+****************************************************************************/
 uint16_t DecToChar(uint8_t value)
 {
 	uint8_t i;

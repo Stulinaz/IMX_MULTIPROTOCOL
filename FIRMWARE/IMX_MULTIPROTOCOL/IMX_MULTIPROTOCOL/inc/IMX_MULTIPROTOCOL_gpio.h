@@ -32,4 +32,7 @@ IMX RT MCU Embedded contest 2021
 #define RX_LED_GPIO_Port              GPIO1
 
 void GpioInit(void);
+void LpSpiInitPins(void);
+void LpuartInitPins(void);
+void I2cInitPins(void);
 #endif /* IMX_MULTIPROTOCOL_GPIO_H_ */

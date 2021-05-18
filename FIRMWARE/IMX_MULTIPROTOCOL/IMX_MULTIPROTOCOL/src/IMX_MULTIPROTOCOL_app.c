@@ -26,13 +26,13 @@ const char *ready = "Ready";
 interface_t user_interface = { NO_DATA_TO_PROCESS, 0, 0, 0, NO_COMMAND};
 
 /****************************************************************************
-Function:			DecodeFromPc
+Function:			Application
 Input:				none
 Output:				none
 PreCondition:		USBInit()
 Overview:			Handles message from user and application call
 ****************************************************************************/
-void DecodeFromPc (void)
+void Application (void)
 {
 	switch(user_interface.cmd_manager_states)
 	{
@@ -40,9 +40,10 @@ void DecodeFromPc (void)
 		{
 			if(user_interface.inactivity_time == 0)
 				user_interface.inactivity_time = GetTick();
+
 			if (data_avail(USB_INTERFACE))
 			{
-				/*Data are avaliable in the vcp buffer - procede with next step*/
+				/*Data are avaliable in the buffer - procede with next step*/
 				user_interface.time_app = GetTick();
 				user_interface.cmd_manager_states = WAIT_FOR_DATA;
 			}
@@ -53,10 +54,11 @@ void DecodeFromPc (void)
 
 		case CHECK_FOR_INACTIVITY:
 		{
+			/* Check VCP status */
 			if(USBGetStatus() == CONNECTED)
 			{
-			    ErrorCodeSet(1);
-				if ((GetTick() - user_interface.inactivity_time >= INACTIVITY_TIMEOUT))
+			    ErrorCodeSet(CONNECTED);
+				if ( (GetTick() - user_interface.inactivity_time >= INACTIVITY_TIMEOUT) )
 				{
 					/* Inactivity timeout elapsed - send data over usb if possible*/
 					user_interface.inactivity_time = 0;
@@ -64,7 +66,24 @@ void DecodeFromPc (void)
 				}
 			}
 			else
-				ErrorCodeSet(2);
+				ErrorCodeSet(DISCONNECTED);
+			user_interface.cmd_manager_states = CHECK_FOR_RX_DATA;
+			break;
+		}
+
+		case CHECK_FOR_RX_DATA:
+		{
+			/* If serial is enabled, periodically check for data on rx pin*/
+			if(GetWorkingInterface() == USER_SERIAL_INTERFACE_SELECTED)
+			{
+				if ( (GetTick() - user_interface.time_app) >= SERIAL_RX_CHECK_TIMEOUT)
+				{
+					/* Start rx data trace */
+					AppToRx();
+					user_interface.time_app = GetTick();
+					user_interface.inactivity_time = 0;
+				}
+			}
 			user_interface.cmd_manager_states = NO_DATA_TO_PROCESS;
 			break;
 		}
@@ -72,12 +91,12 @@ void DecodeFromPc (void)
 		case WAIT_FOR_DATA:
 		{
 			/* timeout Hit - Clear the buffer and restart*/
-			/* It's not necessary with vcp implementation but could be useful with serial implementation*/
-			if ((GetTick() - user_interface.time_app) >= MAN_TIMEOUT)
+			/* Waiting and checking for data it's not necessary with vcp but could be useful with serial implementation*/
+			if ( (GetTick() - user_interface.time_app) >= MAN_TIMEOUT)
 				user_interface.cmd_manager_states = RESTART;
 			else
 			{
-				if (data_avail(USB_INTERFACE))
+				if (data_avail(USB_INTERFACE) >= MIN_APP_CMD)
 					user_interface.cmd_manager_states = DECODE_MESSAGE;
 				else
 					user_interface.cmd_manager_states = RESTART;
@@ -88,25 +107,20 @@ void DecodeFromPc (void)
 		case DECODE_MESSAGE:
 		{
 			uint8_t conf;
-			// Decode command and procede with application*/
+			/* Decode command and procede with application*/
 			user_interface.user_cmd = Decode(data_avail(USB_INTERFACE) , &conf);
-			Application(&user_interface.user_cmd, &conf);
+			ApplicationData(&user_interface.user_cmd, &conf);
 			user_interface.cmd_manager_states = RESTART;
 			break;
 		}
 
 		case RESTART:
 		{
-			/*Command has been processed - Clear vcp buffer and restart*/
+			/* Clear vcp buffer and restart*/
 			clear_buff(USB_INTERFACE);
 			user_interface.inactivity_time = 0;
 			user_interface.cmd_manager_states = NO_DATA_TO_PROCESS;
 			break;
 		}
 	}
-}
-
-void TransferToPc(void)
-{
-	AppToRx();
 }

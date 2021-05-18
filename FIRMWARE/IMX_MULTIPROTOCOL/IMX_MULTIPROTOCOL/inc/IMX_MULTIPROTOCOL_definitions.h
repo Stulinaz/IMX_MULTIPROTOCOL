@@ -22,7 +22,9 @@ IMX RT MCU Embedded contest 2021
 #define FAIL 0U
 
 #define CONNECTED          1U
-#define DISCONNECTED       0U
+#define DISCONNECTED       2U
+
+#define SPI_NSS_DRIVEN_MANUALLY
 
 typedef enum{
 FALSE = 0,

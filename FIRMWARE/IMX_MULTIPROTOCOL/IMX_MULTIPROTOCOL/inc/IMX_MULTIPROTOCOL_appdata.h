@@ -10,7 +10,8 @@ IMX RT MCU Embedded contest 2021
 
 #include "IMX_MULTIPROTOCOL_command_process.h"
 
-void Application (command_t * user_cmd, uint8_t * const user_data);
+void ApplicationData (command_t * user_cmd, uint8_t * const user_data);
 void AppToRx(void);
+command_t GetWorkingInterface(void);
 
 #endif /* INC_IMX_MULTIPROTOCOL_APPDATA_H_ */

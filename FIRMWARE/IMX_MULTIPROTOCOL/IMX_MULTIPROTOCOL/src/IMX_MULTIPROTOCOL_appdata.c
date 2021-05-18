@@ -12,6 +12,9 @@ IMX RT MCU Embedded contest 2021
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_ledmanager.h"
 #include "IMX_MULTIPROTOCOL_lpspi.h"
+#include "IMX_MULTIPROTOCOL_definitions.h"
+#include "IMX_MULTIPROTOCOL_gpt.h"
+#include "IMX_MULTIPROTOCOL_gpio.h"
 
 command_t communication_mode = NO_COMMAND;
 
@@ -19,7 +22,7 @@ static void AppToTx(command_t mode);
 static void I2cScanQueue(void);
 static void PrintHelp(void);
 
-void Application (command_t * user_cmd, uint8_t * const user_data)
+void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 {
 	switch(*user_cmd)
 	{
@@ -29,12 +32,17 @@ void Application (command_t * user_cmd, uint8_t * const user_data)
 		case UNKNOWN_COMMAND:
 		{
 			if ( (communication_mode == USER_SERIAL_INTERFACE_SELECTED) || (communication_mode == USER_SPI_INTERFACE_SELECTED) )
+			{
+				/* with serial and Spi interface selected, device must forward all data*/
 				AppToTx(communication_mode);
+			}
 			else
+			{
+				/* What did you say?*/
 				UsbPrintString("unknown command", TRUE);
+			}
 			break;
 		}
-
 
 		case USER_COMMUNICATION_ABORT:
 		{
@@ -55,12 +63,14 @@ void Application (command_t * user_cmd, uint8_t * const user_data)
 		}
 
 		case USER_SERIAL_INTERFACE_SELECTED:
-		if(communication_mode == NO_COMMAND)
 		{
-			LedInterfaceSel(USER_SERIAL_INTERFACE_SELECTED);
-			LpuartInit();
-			communication_mode = USER_SERIAL_INTERFACE_SELECTED;
-			UsbPrintString("Serial interface selected", TRUE);
+			if(communication_mode == NO_COMMAND)
+			{
+				LedInterfaceSel(USER_SERIAL_INTERFACE_SELECTED);
+				LpuartInit();
+				communication_mode = USER_SERIAL_INTERFACE_SELECTED;
+				UsbPrintString("Serial interface selected", TRUE);
+			}
 			break;
 		}
 
@@ -73,21 +83,25 @@ void Application (command_t * user_cmd, uint8_t * const user_data)
 		}
 
 		case USER_SPI_INTERFACE_SELECTED:
-		if(communication_mode == NO_COMMAND)
 		{
-			LedInterfaceSel(USER_SPI_INTERFACE_SELECTED);
-			LpSpiInit();
-			communication_mode = USER_SPI_INTERFACE_SELECTED;
-			UsbPrintString("SPI interface selected", TRUE);
+			if(communication_mode == NO_COMMAND)
+			{
+				LedInterfaceSel(USER_SPI_INTERFACE_SELECTED);
+				LpSpiInit();
+				communication_mode = USER_SPI_INTERFACE_SELECTED;
+				UsbPrintString("SPI interface selected", TRUE);
+			}
 			break;
 		}
 
 		case USER_SER_SET_BAUDRATE:
-		if(communication_mode != USER_SERIAL_INTERFACE_SELECTED)
 		{
-			/*changing serial baudrate on the fly not supported*/
-			if(SerBaudrateSel(*user_data))
-				UsbPrintString("Serial baudrate set", TRUE);
+			if(communication_mode != USER_SERIAL_INTERFACE_SELECTED)
+			{
+				/* Changing serial baudrate on the fly not supported*/
+				if(SerBaudrateSel(*user_data))
+					UsbPrintString("Serial baudrate set", TRUE);
+			}
 			break;
 		}
 
@@ -155,19 +169,21 @@ void Application (command_t * user_cmd, uint8_t * const user_data)
 			break;
 		}
 
-		case USER_TRANSFER_REQUEST:
+		case USER_I2C_TRANSFER_REQUEST:
 		{
-			/* solo per i2c*/
-			if(communication_mode != NO_COMMAND)
-				AppToTx(communication_mode);
+			if(communication_mode != USER_I2C_INTERFACE_SELECTED)
+				AppToTx(USER_I2C_INTERFACE_SELECTED);
 			else
-				UsbPrintString("No Interface selected", TRUE);
+				UsbPrintString("No I2c Interface selected", TRUE);
 			break;
 		}
 
 		case HELP:
-		PrintHelp();
-		break;
+		{
+			/* Help me! */
+			PrintHelp();
+			break;
+		}
 
 		default:
 			break;
@@ -190,29 +206,35 @@ static void I2cScanQueue(void)
 			break;*/
 
 			case ADDRESS_TRANSFER:
-
-			if ( (byte & MASTER_RECEIVER) != 0 )
-				UsbPrintString("Read mode ", FALSE);
-			else
-			UsbPrintString("Write mode ", FALSE);
-			conversion = DecToChar(byte);
-			UsbPrintString("Addr: ", FALSE);
-			putbyte(USB_INTERFACE, (uint8_t)(conversion >> 8));
-			putbyte(USB_INTERFACE, (uint8_t) conversion );
-			UsbPrintString("h ", TRUE);
-			break;
+			{
+				if ( (byte & MASTER_RECEIVER) != 0 )
+					UsbPrintString("Read mode ", FALSE);
+				else
+				UsbPrintString("Write mode ", FALSE);
+				conversion = DecToChar(byte);
+				UsbPrintString("Addr: ", FALSE);
+				putbyte(USB_INTERFACE, (uint8_t)(conversion >> 8));
+				putbyte(USB_INTERFACE, (uint8_t) conversion );
+				UsbPrintString("h ", TRUE);
+				break;
+			}
 
 			case BYTE_WRITE:
-			conversion = DecToChar(byte);
-			UsbPrintString("Byte write: ", FALSE);
-			putbyte(USB_INTERFACE, (uint8_t)(conversion >> 8));
-			putbyte(USB_INTERFACE, (uint8_t) conversion );
-			UsbPrintString("h ", TRUE);
-			break;
+			{
+				conversion = DecToChar(byte);
+				UsbPrintString("Byte write: ", FALSE);
+				putbyte(USB_INTERFACE, (uint8_t)(conversion >> 8));
+				putbyte(USB_INTERFACE, (uint8_t) conversion );
+				UsbPrintString("h ", TRUE);
+				break;
+			}
 
 			case BYTE_READ:
-			UsbPrintString("Byte Read", TRUE);
-			break;
+			{
+				//TODO?
+				UsbPrintString("Byte Read", TRUE);
+				break;
+			}
 			default:
 			break;
 		}
@@ -232,59 +254,81 @@ static void AppToTx(command_t mode)
 		{
 			data_len = SetBuffer(SER_INTERFACE);
 			if(data_len)
+			{
+				/* Enable serial TX interrupt*/
 				SerStartTransmit();
+			}
 			break;
 		}
 
 		case USER_I2C_INTERFACE_SELECTED:
-		data = (uint16_t) I2cTransfer();
-		if(data)
 		{
-			/* Error on I2C bus*/
-			data = DecToChar(data);
-			UsbPrintString("Transfer Failure - error code:", FALSE);
-			putbyte(USB_INTERFACE, (uint8_t)(data  >> 8));
-			putbyte(USB_INTERFACE, (uint8_t) data  );
-			UsbPrintString("h ", TRUE);
-		}
-		else
-		{
-			/* No Error on I2C bus*/
-			/* Output data if user request i2c read*/
-			while(I2cGetqueue( &byte, &cmd, i++))
+			data = (uint16_t) I2cTransfer();
+			if(data)
 			{
-				if(cmd == BYTE_READ)
-				{
-					data = DecToChar(byte);
-					UsbPrintString("Byte read: ", TRUE);
-					putbyte(USB_INTERFACE, (uint8_t)(data >> 8));
-					putbyte(USB_INTERFACE, (uint8_t) data );
-				}
+				/* Error on I2C bus*/
+				data = DecToChar(data);
+				UsbPrintString("Transfer Failure - error code:", FALSE);
+				putbyte(USB_INTERFACE, (uint8_t)(data  >> 8));
+				putbyte(USB_INTERFACE, (uint8_t) data  );
+				UsbPrintString("h ", TRUE);
 			}
-			UsbPrintString("Transfer Success", TRUE);
+			else
+			{
+				/* No Error on I2C bus*/
+				/* Output data if user request i2c read*/
+				while(I2cGetqueue( &byte, &cmd, i++))
+				{
+					if(cmd == BYTE_READ)
+					{
+						data = DecToChar(byte);
+						UsbPrintString("Byte read: ", TRUE);
+						putbyte(USB_INTERFACE, (uint8_t)(data >> 8));
+						putbyte(USB_INTERFACE, (uint8_t) data );
+						UsbPrintString("h ", FALSE);
+					}
+				}
+				UsbPrintString("Transfer Success", TRUE);
+			}
+			break;
 		}
+
 		case USER_SPI_INTERFACE_SELECTED:
 		{
 			status_t spi_transfer_status;
 			data_len = SetBuffer(SPI_INTERFACE);
 			if(data_len)
 			{
+				#ifdef SPI_NSS_DRIVEN_MANUALLY
+				GPIO_PinWrite(GPIO1, 11 , RESET);
+				Delay(1);
+				#endif
 				spi_transfer_status = LpspiTransfer();
 				if(spi_transfer_status == kStatus_Success)
 				{
+					/* No error on SPI transfer */
 					UsbPrintString("Transfer Success Rx DATA:", FALSE);
 					for(i=0; i<data_len; i++)
 					{
+						/* Output to the user the received characters*/
 						getbyte(SPI_INTERFACE, &byte);
-						putbyte(USB_INTERFACE, byte);
+						data = DecToChar(byte);
+						putbyte(USB_INTERFACE, (uint8_t)(data >> 8));
+						putbyte(USB_INTERFACE, (uint8_t) data );
+						UsbPrintString("h ", FALSE);
 					}
-					UsbPrintString("h ", TRUE);
+					UsbPrintString(" ", TRUE);
 				}
 				else
 					UsbPrintString("Transfer Fail", TRUE);
+				#ifdef SPI_NSS_DRIVEN_MANUALLY
+				Delay(1);
+				GPIO_PinWrite(GPIO1, 11 , SET);
+				#endif
 			}
+			break;
 		}
-		break;
+
 		default:
 			break;
 	}
@@ -295,10 +339,15 @@ void AppToRx(void)
 	switch (communication_mode)
 	{
 		case USER_SERIAL_INTERFACE_SELECTED:
-			SerialToUsb();
-		break;
+		{
+			/* Serial receiver must be ready at anytime*/
+			if( SerialToUsb() == 0)
+				UsbPrintString("No Data", TRUE);
+			break;
+		}
 		case USER_I2C_INTERFACE_SELECTED:
 		case USER_SPI_INTERFACE_SELECTED:
+		/* SPI and I2C receiver starts in async mode*/
 		default:
 		break;
 	}
@@ -308,25 +357,21 @@ static void PrintHelp(void)
 {
 	/*general command + options*/
 	UsbPrintString("imx ", FALSE);
-	UsbPrintString(" options: ", FALSE);
-	putbyte(USB_INTERFACE, CR_);
-
-	putbyte(USB_INTERFACE, TAB);
 	UsbPrintString(serial_cmd_select, FALSE);
 	UsbPrintString( " :Enables serial interface", FALSE);
 	putbyte(USB_INTERFACE, CR_);
 
-	putbyte(USB_INTERFACE, TAB);
+	UsbPrintString("imx ", FALSE);
 	UsbPrintString(i2c_cmd_select, FALSE);
 	UsbPrintString( " :Enables i2c interface", FALSE);
 	putbyte(USB_INTERFACE, CR_);
 
-	putbyte(USB_INTERFACE, TAB);
+	UsbPrintString("imx ", FALSE);
 	UsbPrintString(spi_cmd_select, FALSE);
 	UsbPrintString( " :Enables spi interface", FALSE);
 	putbyte(USB_INTERFACE, CR_);
 
-	putbyte(USB_INTERFACE, TAB);
+	UsbPrintString("imx ", FALSE);
 	UsbPrintString(close, FALSE);
 	UsbPrintString( " :Close Communication", FALSE);
 	putbyte(USB_INTERFACE, CR_);
@@ -334,12 +379,18 @@ static void PrintHelp(void)
 	putbyte(USB_INTERFACE, CR_);
 
 	/*serial command + options*/
-	UsbPrintString("ser", FALSE);
-	putbyte(USB_INTERFACE, TAB);
+	UsbPrintString("ser ", FALSE);
 	UsbPrintString(serial_bausel, FALSE);
 	UsbPrintString(" :Selection of serial badrate", FALSE);
 
 	/*12c command + options*/
 
-	UsbPrintString("Hacathon 2021", TRUE);
+	/* End string*/
+	putbyte(USB_INTERFACE, CR_);
+	UsbPrintString("Electromaker - Hackathon 2021", TRUE);
+}
+
+command_t GetWorkingInterface(void)
+{
+	return communication_mode;
 }

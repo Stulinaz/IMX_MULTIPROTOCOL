@@ -59,6 +59,6 @@ void USB_set_rx_data_len(uint16_t len);
 uint32_t USB_get_rx_data_len(void);
 void UsbPrintString(const char *buff, _bool append_newline);
 uint32_t SetBuffer(comm_inerface_t comm_type);
-void SerialToUsb(void);
+uint32_t SerialToUsb(void);
 
 #endif /* INC_IMX_MULTIPROTOCOL_BUFFERS_MANAGER_H_ */

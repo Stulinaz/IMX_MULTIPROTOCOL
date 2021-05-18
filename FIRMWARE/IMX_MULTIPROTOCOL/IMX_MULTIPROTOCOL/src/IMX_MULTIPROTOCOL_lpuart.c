@@ -8,8 +8,7 @@ IMX RT MCU Embedded contest 2021
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_definitions.h"
-
-static void LpuartInitPins(void);
+#include "IMX_MULTIPROTOCOL_gpio.h"
 
 static lpuart_config_t config;
 static uint32_t lpuart_baudrate = BAUDRATE_DEFAULT;
@@ -63,15 +62,6 @@ void LpuartStop(void)
     /* Disable RX interrupt. */
 	DisableIRQ(DEMO_LPUART_IRQn);
 	LPUART_Deinit(DEMO_LPUART);
-}
-
-static void LpuartInitPins(void)
-{
-	  CLOCK_EnableClock(kCLOCK_Iomuxc);
-	  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_08_LPUART2_TX ,0U);
-	  IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_09_LPUART2_RX, 0U);
-	  IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_08_LPUART2_TX, 0x10B0u);
-	  IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_09_LPUART2_RX, 0x10B0u);
 }
 
 void SerStartTransmit(void)

@@ -10,7 +10,6 @@ IMX RT MCU Embedded contest 2021
 #define IMX_MULTIPROTOCOL_LPI2C_CALLBACK_H_
 
 #include "fsl_lpi2c.h"
-#include "fsl_iomuxc.h"
 
 #define II2C_BAUDRATE     100000U
 #define II2C_MASTER_BASE  (LPI2C1_BASE)
@@ -48,7 +47,6 @@ I2C_ADDRESS_NACK
 }i2c_error_t;
 
 void I2C1_Init(void);
-void I2cInitPins(void);
 void Call_I2cCheckActivation (i2c_error_t *const status_transfer);
 void Call_I2cTransferData(i2c_error_t *const status_transfer, iic_mtdr_cmd_t cmd, uint8_t *const byte,uint8_t dir);
 uint32_t GetTick(void);

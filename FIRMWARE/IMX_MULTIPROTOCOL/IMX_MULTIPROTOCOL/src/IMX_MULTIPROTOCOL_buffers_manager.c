@@ -175,14 +175,19 @@ uint32_t SetBuffer(comm_inerface_t comm_type)
 	return data_len;
 }
 
-void SerialToUsb(void)
+uint32_t SerialToUsb(void)
 {
 	uint8_t byte;
+	uint32_t counter = 0;
 	if( data_avail(SER_INTERFACE) )
 	{
 		while( getbyte(SER_INTERFACE, &byte) )
+		{
+			counter++;
 			putbyte(USB_INTERFACE, byte);
+		}
 		USBTransmit(usb_comm_type.tx_buff_write_index);
 		usb_comm_type.tx_buff_write_index = 0;
 	}
+	return counter;
 }

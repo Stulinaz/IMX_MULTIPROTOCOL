@@ -8,11 +8,18 @@ IMX RT MCU Embedded contest 2021
 
 #include "IMX_MULTIPROTOCOL_lpspi.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
-
-static void LpSpiInitPins(void);
+#include "IMX_MULTIPROTOCOL_definitions.h"
+#include "IMX_MULTIPROTOCOL_gpio.h"
 
 lpspi_master_config_t masterConfig;
 
+/****************************************************************************
+Function:			LpSpiInit
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			SPI configuration
+****************************************************************************/
 void LpSpiInit(void)
 {
     uint32_t srcClock_Hz;
@@ -26,69 +33,25 @@ void LpSpiInit(void)
     LPSPI_MasterInit(EXAMPLE_LPSPI_MASTER_BASEADDR, &masterConfig, srcClock_Hz);
 }
 
+/****************************************************************************
+Function:			LpspiTransfer
+Input:				none
+Output:				Transfer status (0 == Ok)
+PreCondition:		SPI interface must be enabled enabled
+Overview:			SPI transfer (Polling mode)
+****************************************************************************/
 void LpSpiStop(void)
 {
 	LPSPI_Deinit(EXAMPLE_LPSPI_MASTER_BASEADDR);
 }
 
-static void LpSpiInitPins(void)
-{
-  CLOCK_EnableClock(kCLOCK_Iomuxc);
-  IOMUXC_SetPinMux(
-       IOMUXC_GPIO_AD_B0_10_LPSPI1_SCK,        /* GPIO_AD_B0_10 is configured as LPSPI1_SCK */
-       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
-   IOMUXC_SetPinMux(
-       IOMUXC_GPIO_AD_B0_11_LPSPI1_PCS0,       /* GPIO_AD_B0_11 is configured as LPSPI1_PCS0 */
-       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
-   IOMUXC_SetPinMux(
-       IOMUXC_GPIO_AD_B0_12_LPSPI1_SDO,        /* GPIO_AD_B0_12 is configured as LPSPI1_SDO */
-       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
-   IOMUXC_SetPinMux(
-       IOMUXC_GPIO_AD_B0_13_LPSPI1_SDI,        /* GPIO_AD_B0_13 is configured as LPSPI1_SDI */
-       0U);                                    /* Software Input On Field: Input Path is determined by functionality */
-
-   IOMUXC_SetPinConfig(
-        IOMUXC_GPIO_AD_B0_10_LPSPI1_SCK,        /* GPIO_AD_B0_10 PAD functional properties : */
-        0x10B0u);                               /* Slew Rate Field: Slow Slew Rate
-                                                   Drive Strength Field: R0/6
-                                                   Speed Field: medium(100MHz)
-                                                   Open Drain Enable Field: Open Drain Disabled
-                                                   Pull / Keep Enable Field: Pull/Keeper Enabled
-                                                   Pull / Keep Select Field: Keeper
-                                                   Pull Up / Down Config. Field: 100K Ohm Pull Down
-                                                   Hyst. Enable Field: Hysteresis Disabled */
-    IOMUXC_SetPinConfig(
-        IOMUXC_GPIO_AD_B0_11_LPSPI1_PCS0,       /* GPIO_AD_B0_11 PAD functional properties : */
-        0x10B0u);                               /* Slew Rate Field: Slow Slew Rate
-                                                   Drive Strength Field: R0/6
-                                                   Speed Field: medium(100MHz)
-                                                   Open Drain Enable Field: Open Drain Disabled
-                                                   Pull / Keep Enable Field: Pull/Keeper Enabled
-                                                   Pull / Keep Select Field: Keeper
-                                                   Pull Up / Down Config. Field: 100K Ohm Pull Down
-                                                   Hyst. Enable Field: Hysteresis Disabled */
-    IOMUXC_SetPinConfig(
-        IOMUXC_GPIO_AD_B0_12_LPSPI1_SDO,        /* GPIO_AD_B0_12 PAD functional properties : */
-        0x10B0u);                               /* Slew Rate Field: Slow Slew Rate
-                                                   Drive Strength Field: R0/6
-                                                   Speed Field: medium(100MHz)
-                                                   Open Drain Enable Field: Open Drain Disabled
-                                                   Pull / Keep Enable Field: Pull/Keeper Enabled
-                                                   Pull / Keep Select Field: Keeper
-                                                   Pull Up / Down Config. Field: 100K Ohm Pull Down
-                                                   Hyst. Enable Field: Hysteresis Disabled */
-    IOMUXC_SetPinConfig(
-        IOMUXC_GPIO_AD_B0_13_LPSPI1_SDI,        /* GPIO_AD_B0_13 PAD functional properties : */
-        0x10B0u);                               /* Slew Rate Field: Slow Slew Rate
-                                                   Drive Strength Field: R0/6
-                                                   Speed Field: medium(100MHz)
-                                                   Open Drain Enable Field: Open Drain Disabled
-                                                   Pull / Keep Enable Field: Pull/Keeper Enabled
-                                                   Pull / Keep Select Field: Keeper
-                                                   Pull Up / Down Config. Field: 100K Ohm Pull Down
-                                                   Hyst. Enable Field: Hysteresis Disabled */
-}
-
+/****************************************************************************
+Function:			LpspiTransfer
+Input:				none
+Output:				Transfer status (0 == Ok)
+PreCondition:		SPI interface enabled
+Overview:			SPI transfer (Polling mode)
+****************************************************************************/
 status_t LpspiTransfer(void)
 {
 	status_t stat = kStatus_Fail;

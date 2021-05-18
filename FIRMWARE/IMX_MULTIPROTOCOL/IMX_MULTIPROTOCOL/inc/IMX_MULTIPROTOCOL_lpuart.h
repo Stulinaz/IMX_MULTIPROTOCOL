@@ -9,8 +9,6 @@ IMX RT MCU Embedded contest 2021
 #define IMX_MULTIPROTOCOL_LPUART_H_
 
 #include "fsl_lpuart.h"
-#include "fsl_iomuxc.h"
-#include "board.h"
 
 #define DEMO_LPUART            LPUART2
 #define DEMO_LPUART_CLK_FREQ   BOARD_DebugConsoleSrcFreq()

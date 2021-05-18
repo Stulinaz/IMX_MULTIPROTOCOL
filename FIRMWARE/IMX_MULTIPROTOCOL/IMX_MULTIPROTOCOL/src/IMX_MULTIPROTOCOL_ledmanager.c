@@ -46,7 +46,6 @@ void LedManager(void)
 	LedErrorManager();
 }
 
-
 void LedInterfaceSel(command_t cmd)
 {
 	switch(cmd)

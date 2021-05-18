@@ -8,6 +8,7 @@ IMX RT MCU Embedded contest 2021
 
 #include "IMX_MULTIPROTOCOL_lpi2c_callback.h"
 #include "IMX_MULTIPROTOCOL_gpt.h"
+#include "IMX_MULTIPROTOCOL_gpio.h"
 
 LPI2C_Type *i2c = II2C_MASTER;
 uint32_t time_start;
@@ -29,14 +30,6 @@ void I2C1_Init(void)
     LPI2C_MasterClearStatusFlags(i2c, (uint32_t)kLPI2C_MasterClearFlags);
     /* Turn off auto-stop option. */
     i2c->MCFGR1 &= ~LPI2C_MCFGR1_AUTOSTOP_MASK;
-}
-
-void I2cInitPins(void)
-{
-	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL, 1U);
-	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA, 1U);
-	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL, 0xD8B0u);
-	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA, 0xD8B0u);
 }
 
 static void I2cPollFlagMSR(i2c_error_t *const status, iic_mtdr_cmd_t check_cmd)
