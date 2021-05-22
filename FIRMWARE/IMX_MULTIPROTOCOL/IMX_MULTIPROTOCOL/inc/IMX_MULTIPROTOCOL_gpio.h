@@ -35,4 +35,6 @@ void GpioInit(void);
 void LpSpiInitPins(void);
 void LpuartInitPins(void);
 void I2cInitPins(void);
+void I2cSCLPushPull(void);
+
 #endif /* IMX_MULTIPROTOCOL_GPIO_H_ */

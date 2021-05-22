@@ -8,7 +8,7 @@ IMX RT MCU Embedded contest 2021
 #include "IMX_MULTIPROTOCOL_appdata.h"
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_i2c.h"
-#include "IMX_MULTIPROTOCOL_i2c.h"
+#include "IMX_MULTIPROTOCOL_lpi2c_callback.h"
 #include "IMX_MULTIPROTOCOL_lpuart.h"
 #include "IMX_MULTIPROTOCOL_ledmanager.h"
 #include "IMX_MULTIPROTOCOL_lpspi.h"
@@ -24,6 +24,8 @@ static void PrintHelp(void);
 
 void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 {
+	uint8_t i;
+
 	switch(*user_cmd)
 	{
 		case NO_COMMAND:
@@ -77,6 +79,23 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 		case USER_I2C_INTERFACE_SELECTED:
 		{
 			LedInterfaceSel(USER_I2C_INTERFACE_SELECTED);
+			#ifdef I2C_SCL_RELEASE
+			if(communication_mode != USER_I2C_INTERFACE_SELECTED)
+			{
+				/* Slave device could get stuck on bus holding SDA to low*/
+				/* Generate 8 clock endges to release it*/
+				I2cSCLPushPull();
+				for(i=0;i<8;i++)
+				{
+					Delay(2);
+					GPIO_PinWrite(GPIO1, 30 , RESET);
+					Delay(2);
+					GPIO_PinWrite(GPIO1, 30 , SET);
+				}
+				Delay(2);
+			}
+			#endif
+			I2cInitPins();
 			communication_mode = USER_I2C_INTERFACE_SELECTED;
 			UsbPrintString("I2C interface selected", TRUE);
 			break;
@@ -149,13 +168,6 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 			break;
 		}
 
-		case USER_I2C_REPEAT_START:
-/*		if(I2cEnqeue( NUL, REPEAT_START))
-			UsbPrintString("Repeat start condition enqueued", TRUE);
-		else
-			UsbPrintString("Queue full", TRUE);*/
-		break;
-
 		case USER_I2C_REQUEST_QUEUE_DATA:
 		{
 			I2cScanQueue();
@@ -171,7 +183,7 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 
 		case USER_I2C_TRANSFER_REQUEST:
 		{
-			if(communication_mode != USER_I2C_INTERFACE_SELECTED)
+			if(communication_mode == USER_I2C_INTERFACE_SELECTED)
 				AppToTx(USER_I2C_INTERFACE_SELECTED);
 			else
 				UsbPrintString("No I2c Interface selected", TRUE);
@@ -197,14 +209,18 @@ static void I2cScanQueue(void)
 	uint16_t conversion = 0;
 	uint8_t i           = 0;
 
+	/* check empty queue*/
+	I2cGetqueue( &byte, &cmd, 0);
+	if(cmd == NO_COMMAND_SELECTED)
+	{
+		UsbPrintString("I2C queue free", TRUE);
+		return;
+	}
+
 	while(I2cGetqueue( &byte, &cmd, i++))
 	{
 		switch(cmd)
 		{
-/*			case REPEAT_START:
-			UsbPrintString("Start", TRUE);
-			break;*/
-
 			case ADDRESS_TRANSFER:
 			{
 				if ( (byte & MASTER_RECEIVER) != 0 )
@@ -215,7 +231,8 @@ static void I2cScanQueue(void)
 				UsbPrintString("Addr: ", FALSE);
 				putbyte(USB_INTERFACE, (uint8_t)(conversion >> 8));
 				putbyte(USB_INTERFACE, (uint8_t) conversion );
-				UsbPrintString("h ", TRUE);
+				UsbPrintString("h ", FALSE);
+				putbyte(USB_INTERFACE, CR_);
 				break;
 			}
 
@@ -225,20 +242,28 @@ static void I2cScanQueue(void)
 				UsbPrintString("Byte write: ", FALSE);
 				putbyte(USB_INTERFACE, (uint8_t)(conversion >> 8));
 				putbyte(USB_INTERFACE, (uint8_t) conversion );
-				UsbPrintString("h ", TRUE);
+				UsbPrintString("h ", FALSE);
+				putbyte(USB_INTERFACE, CR_);
 				break;
 			}
 
 			case BYTE_READ:
 			{
-				//TODO?
-				UsbPrintString("Byte Read", TRUE);
+				UsbPrintString("Byte Read", FALSE);
+				putbyte(USB_INTERFACE, CR_);
 				break;
 			}
+
+			case NO_COMMAND_SELECTED:
+			{
+				UsbPrintString("Queue End", FALSE);
+				putbyte(USB_INTERFACE, CR_);
+			}
 			default:
-			break;
+				break;
 		}
 	}
+	UsbPrintString(" ", TRUE);
 }
 
 static void AppToTx(command_t mode)
@@ -267,11 +292,29 @@ static void AppToTx(command_t mode)
 			if(data)
 			{
 				/* Error on I2C bus*/
+				#ifndef I2C_ERROR_VERBOSE
 				data = DecToChar(data);
 				UsbPrintString("Transfer Failure - error code:", FALSE);
 				putbyte(USB_INTERFACE, (uint8_t)(data  >> 8));
 				putbyte(USB_INTERFACE, (uint8_t) data  );
 				UsbPrintString("h ", TRUE);
+				#else
+				UsbPrintString("Transfer Failure ",FALSE);
+				switch(data)
+				{
+					case I2C_BUS_BUSY:
+					UsbPrintString("Bus busy", TRUE);
+					break;
+					case I2C_TIMEOUT:
+					UsbPrintString("Timeout", TRUE);
+					break;
+					case I2C_ADDRESS_NACK:
+					UsbPrintString("Address NACK", TRUE);
+					break;
+					default:
+						UsbPrintString("Error", TRUE);
+				}
+				#endif
 			}
 			else
 			{

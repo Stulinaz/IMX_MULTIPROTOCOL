@@ -125,9 +125,6 @@ command_t Decode(uint16_t cmd_len, uint8_t *const param)
 	    if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, i2c_access_read, opt_cmd_len) == 0)
 	    	return USER_I2C_READ_DATA;
 
-	    if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, i2c_repeat_start, opt_cmd_len) == 0)
-	    	return USER_I2C_REPEAT_START;
-
 	    if(memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, i2c_queue_req, opt_cmd_len) == 0)
 	    	return USER_I2C_REQUEST_QUEUE_DATA;
 

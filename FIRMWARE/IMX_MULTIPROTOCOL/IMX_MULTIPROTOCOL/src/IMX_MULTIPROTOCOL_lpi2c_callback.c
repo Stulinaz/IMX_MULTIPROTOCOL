@@ -16,11 +16,10 @@ uint32_t time_start;
 static void I2cPollFlagMSR(i2c_error_t *const status, iic_mtdr_cmd_t check_cmd);
 static i2c_error_t I2cFailureDetect(void);
 
-//LPI2c page 2241
-//MTDR (master transmit data) page 2280
-
 void I2C1_Init(void)
 {
+    /* Pin configuration*/
+    I2cInitPins();
 	lpi2c_master_config_t masterConfig;
 	LPI2C_MasterReset(i2c);
     masterConfig.baudRate_Hz = II2C_BAUDRATE;
@@ -46,34 +45,45 @@ static void I2cPollFlagMSR(i2c_error_t *const status, iic_mtdr_cmd_t check_cmd)
 		{
 			switch(check_cmd)
 			{
-			case CMD_TRANSMIT:
-			/*Check empty TX FIFO*/
-			if ( (i2c->MFSR & LPI2C_MFSR_TXCOUNT_MASK) == 0)
-					return;
-			break;
-			case CMD_RECEIVE:
-			/*Check non empty RX FIFO*/
-			if ( (i2c->MFSR & LPI2C_MFSR_RXCOUNT_MASK) != 0)
-					return;
-			break;
-			case CMD_STOP:
-			/* stop condition detected*/
-			if ( (i2c->MSR & LPI2C_MIER_SDIE_MASK) != 0)
-				return;
-			break;
-			case CMD_STARTnADDRESS_ACK:
-				/*Check TX FIFO*/
-				if ( (i2c->MFSR & LPI2C_MFSR_TXCOUNT_MASK) == 0)
+				case CMD_TRANSMIT:
 				{
-					return;
+					/*Check empty TX FIFO*/
+					if ( (i2c->MFSR & LPI2C_MFSR_TXCOUNT_MASK) == 0)
+							return;
+					break;
 				}
-				if ( (i2c->MSR & LPI2C_MSR_NDF_MASK) != 0)
+
+				case CMD_RECEIVE:
 				{
-					(*status) = I2C_ADDRESS_NACK;
-					return;
+					/*Check non empty RX FIFO*/
+					if ( (i2c->MFSR & LPI2C_MFSR_RXCOUNT_MASK) != 0)
+							return;
+					break;
 				}
-			default:
-			break;
+
+				case CMD_STOP:
+				{
+					/* stop condition detected*/
+					if ( (i2c->MSR & LPI2C_MIER_SDIE_MASK) != 0)
+						return;
+					break;
+				}
+
+				case CMD_STARTnADDRESS_ACK:
+				{
+					/*Check TX FIFO*/
+					if ( (i2c->MFSR & LPI2C_MFSR_TXCOUNT_MASK) == 0)
+					{
+						return;
+					}
+					if ( (i2c->MSR & LPI2C_MSR_NDF_MASK) != 0)
+					{
+						(*status) = I2C_ADDRESS_NACK;
+						return;
+					}
+				}
+				default:
+				break;
 			}
 
 		}
@@ -94,10 +104,10 @@ static i2c_error_t I2cFailureDetect(void)
 void Call_I2cCheckActivation (i2c_error_t *const status_transfer)
 {
 	time_start = GetTick();
-	/* check for peripheral activation */
+	/* Check for peripheral activation */
 	if ((i2c->MCR & LPI2C_MCR_MEN_MASK) == 0)
 		(*status_transfer) = I2C_NOT_ACTIVATED;
-	/*check for idle bus status*/
+	/* Check for idle bus status*/
 	if ((i2c->MCR & LPI2C_MSR_BBF_MASK) != 0)
 		(*status_transfer) = I2C_BUS_BUSY;
 }
@@ -107,26 +117,49 @@ void Call_I2cTransferData(i2c_error_t *const status_transfer, iic_mtdr_cmd_t cmd
 	switch(cmd)
 	{
 		case CMD_TRANSMIT:
-		/* data transmit */
-		i2c->MTDR = (uint32_t)IIC_CMD_TRANSMIT | ( ((uint32_t)(*byte)) );
-		I2cPollFlagMSR(status_transfer, cmd);
-		break;
+		{
+			/* Data transmit */
+			i2c->MTDR = (uint32_t)IIC_CMD_TRANSMIT | ( ((uint32_t)(*byte)) );
+			I2cPollFlagMSR(status_transfer, cmd);
+			break;
+		}
+
 		case CMD_RECEIVE:
-		/* receive data */
-		i2c->MTDR = (uint32_t)IIC_CMD_RECEIVE | ( ((uint32_t)(*byte)) );
-		I2cPollFlagMSR(status_transfer, cmd);
-		break;
-		case CMD_STOP:
-		/* generation of stop condition*/
-		i2c->MTDR = (uint32_t)IIC_CMD_STOP;
-		I2cPollFlagMSR(status_transfer, cmd);
-		break;
+		{
+			/* Receive data */
+			i2c->MTDR = (uint32_t)IIC_CMD_RECEIVE | ( ((uint32_t)(*byte)) );
+			I2cPollFlagMSR(status_transfer, cmd);
+			*byte = (uint8_t) i2c->MRDR;
+			break;
+		}
+
 		case CMD_STARTnADDRESS_ACK:
-		/* send address - ack mode*/
-		i2c->MTDR = (uint32_t)IIC_CMD_STARTnADDRESS_ACK  | (((uint32_t)(*byte) << 1U) | (uint32_t) dir);
-		I2cPollFlagMSR(status_transfer, cmd);
-		break;
+		{
+			/* Send address - ack mode*/
+			i2c->MTDR = (uint32_t)IIC_CMD_STARTnADDRESS_ACK  | (((uint32_t)(*byte) << 1U) | (uint32_t) dir);
+			I2cPollFlagMSR(status_transfer, cmd);
+			break;
+		}
+
+
+		case CMD_STOP:
+		{
+			/* Generation of stop condition*/
+			i2c->MTDR = (uint32_t)IIC_CMD_STOP;
+			I2cPollFlagMSR(status_transfer, cmd);
+			break;
+		}
 		default:
 		break;
 	}
+}
+
+void Call_I2cReset(void)
+{
+	/*Clear Nack Detect Flag*/
+	i2c->MSR &= (~ (uint32_t)LPI2C_MSR_NDF_MASK);
+	/* CLear Fifo Error Flag*/
+	i2c->MSR &= (~ (uint32_t)LPI2C_MSR_FEF_MASK );
+	/* periph reset*/
+	LPI2C_MasterReset(i2c);
 }

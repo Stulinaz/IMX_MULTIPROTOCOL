@@ -54,14 +54,11 @@
 
 int main(void)
 {
-	//uint32_t x ;
     BOARD_ConfigMPU();
-    BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
     GpioInit();
     GptInit();
-    LpuartInit();
     USBInit();
 //    __NVIC_SetPriority(USB_OTG1_IRQn, 1);
    // __NVIC_SetPriority(GPT2_IRQn, 5);
@@ -71,24 +68,8 @@ int main(void)
 //    x = __NVIC_GetPriority( LPUART2_IRQn);
     while (1)
     {
-//    	putbyte(SER_INTERFACE, 0x55);
-//    	putbyte(SER_INTERFACE, 0x55);
-//    	putbyte(SER_INTERFACE, 0x55);
-//    	SerStartTransmit();
-//    	Delay(100);
-
-    	//SerialTransfer();
-//    	GPIO_PinWrite(GPIO1, 11 , SET);
-//    	while(1)
-//    	{
-//    	GPIO_PinWrite(GPIO1, 11 , RESET);
-//    	Delay(100);
-//    	GPIO_PinWrite(GPIO1, 11 , SET);
-//    	Delay(100);
-//    	}
     	LedManager();
     	Application();
-    	//UsbVcpTask();
     }
 }
 

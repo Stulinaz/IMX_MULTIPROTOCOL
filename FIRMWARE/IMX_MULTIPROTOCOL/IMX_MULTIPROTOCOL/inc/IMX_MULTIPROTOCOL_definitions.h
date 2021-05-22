@@ -25,7 +25,9 @@ IMX RT MCU Embedded contest 2021
 #define DISCONNECTED       2U
 
 #define SPI_NSS_DRIVEN_MANUALLY
-
+#define I2C_INTERNAL_PULLUP_ENABLED
+#define I2C_SCL_RELEASE
+#define I2C_ERROR_VERBOSE
 typedef enum{
 FALSE = 0,
 TRUE = 1

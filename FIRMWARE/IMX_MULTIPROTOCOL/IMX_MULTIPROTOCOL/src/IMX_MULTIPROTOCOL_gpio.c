@@ -114,8 +114,34 @@ Overview:			LPI2C1 pin configuration
 ****************************************************************************/
 void I2cInitPins(void)
 {
+	#ifndef I2C_INTERNAL_PULLUP_ENABLED
 	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL, 1U);
 	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA, 1U);
 	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL, 0xD8B0u);
 	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA, 0xD8B0u);
+	#else
+	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL, 1U);
+	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA, 1U);
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_14_LPI2C1_SCL, 0x18B0u);
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_15_LPI2C1_SDA, 0x18B0u);
+	#endif
+}
+
+
+/****************************************************************************
+Function:			I2cSCLPushPull
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Configure LPI2C1 SCL pin as push pull
+****************************************************************************/
+void I2cSCLPushPull(void)
+{
+	gpio_pin_config_t i2c_scl_config;
+	i2c_scl_config.direction     = kGPIO_DigitalOutput;
+	i2c_scl_config.interruptMode = kGPIO_NoIntmode;
+	i2c_scl_config.outputLogic   = SET;
+	GPIO_PinInit(GPIO1, 30, &i2c_scl_config);
+	IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B1_14_GPIO1_IO30, 0U);
+	IOMUXC_SetPinConfig(IOMUXC_GPIO_AD_B1_14_GPIO1_IO30,  0x70A0u);
 }

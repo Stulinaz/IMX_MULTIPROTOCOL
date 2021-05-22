@@ -21,11 +21,8 @@ typedef enum{
 NO_COMMAND_SELECTED = 0u,
 BYTE_WRITE,
 BYTE_READ,
-ADDRESS_TRANSFER,
-ACK_EXPECTED,
-NACK_EXPECTED,
+ADDRESS_TRANSFER
 }i2c_queue_t;
-
 
 _bool I2cEnqeue( uint8_t data, i2c_queue_t param);
 _bool I2cGetqueue( uint8_t *const data, i2c_queue_t *const param, uint8_t queue_pos);
