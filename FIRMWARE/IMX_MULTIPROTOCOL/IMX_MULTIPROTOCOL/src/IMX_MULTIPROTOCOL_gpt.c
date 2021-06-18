@@ -12,6 +12,13 @@ IMX RT MCU Embedded contest 2021
 #endif
 volatile uint32_t tick_cnt = 0;
 
+/****************************************************************************
+Function:			GptInit
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Timer init (ticks every 1 ms)
+****************************************************************************/
 void GptInit(void)
 {
     uint32_t gptFreq;
@@ -34,16 +41,31 @@ void GptInit(void)
     GPT_StartTimer(EXAMPLE_GPT);
 }
 
+/****************************************************************************
+Function:			GetTick
+Input:				none
+Output:				time ticks
+PreCondition:		GptInit() call
+Overview:			Application time management
+****************************************************************************/
 uint32_t GetTick(void)
 {
 	return tick_cnt;
 }
 
+/****************************************************************************
+Function:			Delay
+Input:				none
+Output:				none
+PreCondition:		GptInit() call
+Overview:			Blocking delay
+****************************************************************************/
 void Delay(uint32_t ms_wait)
 {
 	uint32_t ticks =  GetTick();
 	while( !((GetTick() - ticks) >= ms_wait) );
 }
+
 
 void EXAMPLE_GPT_IRQHandler(void)
 {

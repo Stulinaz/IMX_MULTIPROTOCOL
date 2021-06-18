@@ -26,19 +26,19 @@ const char close[]             = " -a";
 const char help[]              = " -h";
 const char transfer_start[]    = " -x";
 
+/*options for spi command*/
+const char spinss_active_high[]= " -ah";
+const char spinss_active_low[] = " -al";
+
 /*options for ser command*/
 const char serial_bausel[]     = " -b";
 
 /*options for i2c command*/
 const char i2c_address[]       = " -a 0x";
-
 const char i2c_transmitter[]   = " -mt";
 const char i2c_receiver[]      = " -mr";
-
 const char i2c_access_write[]  = " -w 0x";
 const char i2c_access_read[]   = " -r";
-
-const char i2c_repeat_start[]  = " -s";
 const char i2c_queue_req[]     = " -q";
 const char i2c_queue_delete[]  = " -d";
 
@@ -88,6 +88,16 @@ command_t Decode(uint16_t cmd_len, uint8_t *const param)
 		if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, close, opt_cmd_len) == 0)
 			return USER_COMMUNICATION_ABORT;
 
+	}
+
+	/*spi commands*/
+	if(memcmp(main_command, spi_command, MAIN_COMMAND_DIM_SIZE) == 0)
+	{
+	    if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, spinss_active_high, opt_cmd_len) == 0)
+				return USER_NSS_ACTIVE_HIGH;
+
+	    if( memcmp(usb_rx_buff + MAIN_COMMAND_DIM_SIZE, spinss_active_low, opt_cmd_len) == 0)
+				return USER_NSS_ACTIVE_LOW;
 	}
 
 	/*serial commands*/

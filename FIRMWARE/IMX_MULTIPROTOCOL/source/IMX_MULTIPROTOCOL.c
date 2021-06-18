@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2016-2021 NXP
  * All rights reserved.
@@ -40,32 +41,29 @@
 /*${standard_header_anchor}*/
 #include "fsl_device_registers.h"
 #include "fsl_debug_console.h"
-#include "pin_mux.h"
 #include "clock_config.h"
 #include "board.h"
 #include "IMX_MULTIPROTOCOL_usb.h"
 #include "IMX_MULTIPROTOCOL_gpio.h"
 #include "IMX_MULTIPROTOCOL_gpt.h"
 #include "IMX_MULTIPROTOCOL_ledmanager.h"
-#include "IMX_MULTIPROTOCOL_lpuart.h"
-#include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_app.h"
-#include "IMX_MULTIPROTOCOL_lpspi.h"
+
+/*
+ _   _   _   ___ _  __   _   _____ _   _  ___  _   _
+| |_| | /_\ / __| |/ /  /_\ |_   _| |_| |/ _ \| \ | |
+|  _  |/ _ \ (__| ' <  / _ \  | | |  _  | (_) |  \| |
+|_| |_/_/ \_\___|_|\_\/_/ \_\_|_| |_| |_|\___/|_|\__|
+IMX RT MCU Embedded contest 2021
+*/
 
 int main(void)
 {
     BOARD_ConfigMPU();
     BOARD_BootClockRUN();
-    BOARD_InitDebugConsole();
     GpioInit();
     GptInit();
     USBInit();
-//    __NVIC_SetPriority(USB_OTG1_IRQn, 1);
-   // __NVIC_SetPriority(GPT2_IRQn, 5);
-    //__NVIC_SetPriority(LPUART2_IRQn, 4);
-//    x = __NVIC_GetPriority( USB_OTG1_IRQn);
-//    x = __NVIC_GetPriority( GPT2_IRQn);
-//    x = __NVIC_GetPriority( LPUART2_IRQn);
     while (1)
     {
     	LedManager();

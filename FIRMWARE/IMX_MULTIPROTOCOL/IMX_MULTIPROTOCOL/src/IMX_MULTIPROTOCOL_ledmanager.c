@@ -46,6 +46,13 @@ void LedManager(void)
 	LedErrorManager();
 }
 
+/****************************************************************************
+Function:			LedInterfaceSel
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			visual activation of woring interface (SPI - UART - I2C)
+****************************************************************************/
 void LedInterfaceSel(command_t cmd)
 {
 	switch(cmd)
@@ -82,6 +89,13 @@ void LedInterfaceSel(command_t cmd)
 	}
 }
 
+/****************************************************************************
+Function:			CommunicationLedSetTime
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Visualize on-goin transfer on selected interface (SPI - UART - I2C)
+****************************************************************************/
 static void CommunicationLedSetTime(void)
 {
 	switch(visualize_transfer)
@@ -101,6 +115,13 @@ static void CommunicationLedSetTime(void)
 	}
 }
 
+/****************************************************************************
+Function:			CommunicationLedVisualize
+Input:				none
+Output:				none
+PreCondition:		must be call in gpt interrupt
+Overview:			Visualize on-goin transfer on selected interface (SPI - UART - I2C)
+****************************************************************************/
 void CommunicationLedVisualize(void)
 {
 	CommunicationLedSetTime();

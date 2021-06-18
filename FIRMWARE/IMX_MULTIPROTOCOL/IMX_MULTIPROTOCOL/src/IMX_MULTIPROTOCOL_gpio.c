@@ -9,6 +9,13 @@ IMX RT MCU Embedded contest 2021
 #include "IMX_MULTIPROTOCOL_gpio.h"
 #include "IMX_MULTIPROTOCOL_definitions.h"
 
+/****************************************************************************
+Function:			GpioInit
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Initialize hv gpios
+****************************************************************************/
 void GpioInit(void)
 {
 	gpio_pin_config_t led_config;

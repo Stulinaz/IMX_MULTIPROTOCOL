@@ -10,8 +10,10 @@ IMX RT MCU Embedded contest 2021
 #include "IMX_MULTIPROTOCOL_buffers_manager.h"
 #include "IMX_MULTIPROTOCOL_definitions.h"
 #include "IMX_MULTIPROTOCOL_gpio.h"
+#include "IMX_MULTIPROTOCOL_gpt.h"
 
 lpspi_master_config_t masterConfig;
+spi_nss_t masterNss = NSS_ACTIVE_LOW;
 
 /****************************************************************************
 Function:			LpSpiInit
@@ -66,7 +68,25 @@ status_t LpspiTransfer(void)
     {
 		spi_comm_type.rx_buff_write_index  = masterXfer.dataSize;
 		masterXfer.configFlags = EXAMPLE_LPSPI_MASTER_PCS_FOR_TRANSFER | kLPSPI_MasterByteSwap;
+
+		#ifdef SPI_NSS_DRIVEN_MANUALLY
+		if(masterNss == NSS_ACTIVE_LOW)
+			GPIO_PinWrite(GPIO1, 11 , RESET);
+		else
+			GPIO_PinWrite(GPIO1, 11 , SET);
+		Delay(1);
+		#endif
+
 		stat = LPSPI_MasterTransferBlocking(EXAMPLE_LPSPI_MASTER_BASEADDR, &masterXfer);
+
+		#ifdef SPI_NSS_DRIVEN_MANUALLY
+		Delay(1);
+		if(masterNss == NSS_ACTIVE_LOW)
+			GPIO_PinWrite(GPIO1, 11 , SET);
+		else
+			GPIO_PinWrite(GPIO1, 11 , RESET);
+		#endif
+
 		spi_comm_type.tx_buff_read_index  = 0;
 		spi_comm_type.tx_buff_write_index = 0;
     }

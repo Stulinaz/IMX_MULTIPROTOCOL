@@ -22,6 +22,12 @@ static void AppToTx(command_t mode);
 static void I2cScanQueue(void);
 static void PrintHelp(void);
 
+/****************************************************************************
+Function:			ApplicationData
+Input:				(command_t * user_cmd) last command correctly decoded
+					(uint8_t * const user_data) parameter decoded
+Overview:			Application Data Transfer
+****************************************************************************/
 void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 {
 	uint8_t i;
@@ -61,6 +67,14 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 				UsbPrintString("SPI interface closed", TRUE);
 				communication_mode = NO_COMMAND;
 			}
+			else if(communication_mode == USER_I2C_INTERFACE_SELECTED)
+			{
+				LpSpiStop();
+				UsbPrintString("I2C interface closed", TRUE);
+				communication_mode = NO_COMMAND;
+			}
+			else
+				UsbPrintString("No interface selected", TRUE);
 			break;
 		}
 
@@ -71,8 +85,8 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 				LedInterfaceSel(USER_SERIAL_INTERFACE_SELECTED);
 				LpuartInit();
 				communication_mode = USER_SERIAL_INTERFACE_SELECTED;
-				UsbPrintString("Serial interface selected", TRUE);
 			}
+			UsbPrintString("Serial interface selected", TRUE);
 			break;
 		}
 
@@ -108,11 +122,35 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 				LedInterfaceSel(USER_SPI_INTERFACE_SELECTED);
 				LpSpiInit();
 				communication_mode = USER_SPI_INTERFACE_SELECTED;
-				UsbPrintString("SPI interface selected", TRUE);
 			}
+			UsbPrintString("SPI interface selected", TRUE);
 			break;
 		}
 
+		/* SPI Options */
+		case USER_NSS_ACTIVE_HIGH:
+		{
+			#ifdef SPI_NSS_DRIVEN_MANUALLY
+			masterNss = NSS_ACTIVE_HIGH;
+			UsbPrintString("SPI NSS active high", TRUE);
+			/* Put NSS to IDLE state*/
+			GPIO_PinWrite(GPIO1, 11 , RESET);
+			#endif
+			break;
+		}
+
+		case USER_NSS_ACTIVE_LOW:
+		{
+			#ifdef SPI_NSS_DRIVEN_MANUALLY
+			masterNss = NSS_ACTIVE_LOW;
+			/* Put NSS to IDLE state*/
+			GPIO_PinWrite(GPIO1, 11 , SET);
+			UsbPrintString("SPI NSS active low", TRUE);
+			#endif
+			break;
+		}
+
+		/* Serial Options */
 		case USER_SER_SET_BAUDRATE:
 		{
 			if(communication_mode != USER_SERIAL_INTERFACE_SELECTED)
@@ -121,10 +159,12 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 				if(SerBaudrateSel(*user_data))
 					UsbPrintString("Serial baudrate set", TRUE);
 			}
+			else
+				UsbPrintString("Error - Serial interface must be closed", TRUE);
 			break;
 		}
 
-		/* I2C Handler */
+		/* I2C Options */
 		case USER_I2C_SET_SLAVE_ADDRESS:
 		{
 			I2cSetSlaveAddress( (*user_data ) );
@@ -153,7 +193,7 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 		case USER_I2C_WRITE_DATA:
 		{
 			if (I2cEnqeue( (*user_data), BYTE_WRITE) )
-				UsbPrintString("Byte transfer enqueued", TRUE);
+				UsbPrintString("Byte write enqueued", TRUE);
 			else
 				UsbPrintString("Queue full", TRUE);
 			break;
@@ -177,7 +217,7 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 		case USER_I2C_REQUEST_QUEUE_DELETE:
 		{
 			I2cQueueRelease();
-			UsbPrintString("I2C queue free", TRUE);
+			UsbPrintString("Queue free", TRUE);
 			break;
 		}
 
@@ -202,6 +242,13 @@ void ApplicationData (command_t * user_cmd, uint8_t * const user_data)
 	}
 }
 
+/****************************************************************************
+Function:			I2cScanQueue
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Scan the I2c commands queue and output to the user
+****************************************************************************/
 static void I2cScanQueue(void)
 {
 	i2c_queue_t cmd;
@@ -266,6 +313,13 @@ static void I2cScanQueue(void)
 	UsbPrintString(" ", TRUE);
 }
 
+/****************************************************************************
+Function:			AppToTx
+Input:				command_t mode (selected working interface UART - SPI - I2C)
+Output:				none
+PreCondition:		none
+Overview:			Start data transfer on selected working interface
+****************************************************************************/
 static void AppToTx(command_t mode)
 {
 	uint32_t data_len;
@@ -312,7 +366,7 @@ static void AppToTx(command_t mode)
 					UsbPrintString("Address NACK", TRUE);
 					break;
 					default:
-						UsbPrintString("Error", TRUE);
+						UsbPrintString("General Error", TRUE);
 				}
 				#endif
 			}
@@ -342,10 +396,6 @@ static void AppToTx(command_t mode)
 			data_len = SetBuffer(SPI_INTERFACE);
 			if(data_len)
 			{
-				#ifdef SPI_NSS_DRIVEN_MANUALLY
-				GPIO_PinWrite(GPIO1, 11 , RESET);
-				Delay(1);
-				#endif
 				spi_transfer_status = LpspiTransfer();
 				if(spi_transfer_status == kStatus_Success)
 				{
@@ -364,10 +414,6 @@ static void AppToTx(command_t mode)
 				}
 				else
 					UsbPrintString("Transfer Fail", TRUE);
-				#ifdef SPI_NSS_DRIVEN_MANUALLY
-				Delay(1);
-				GPIO_PinWrite(GPIO1, 11 , SET);
-				#endif
 			}
 			break;
 		}
@@ -377,6 +423,15 @@ static void AppToTx(command_t mode)
 	}
 }
 
+/****************************************************************************
+Function:			AppToRx
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Check data on UART interface
+case Data avalible: Output data to the user
+case NO data abaliable: Output "NO data String"
+****************************************************************************/
 void AppToRx(void)
 {
 	switch (communication_mode)
@@ -396,6 +451,13 @@ void AppToRx(void)
 	}
 }
 
+/****************************************************************************
+Function:			PrintHelp
+Input:				none
+Output:				none
+PreCondition:		none
+Overview:			Print a help string to the User on Virtual Com Port
+****************************************************************************/
 static void PrintHelp(void)
 {
 	/*general command + options*/
@@ -425,8 +487,54 @@ static void PrintHelp(void)
 	UsbPrintString("ser ", FALSE);
 	UsbPrintString(serial_bausel, FALSE);
 	UsbPrintString(" :Selection of serial badrate", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	/*spi command + options*/
+	UsbPrintString("spi ", FALSE);
+	UsbPrintString(spinss_active_high, FALSE);
+	UsbPrintString(" :spinss_active_high", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("spi ", FALSE);
+	UsbPrintString(spinss_active_low, FALSE);
+	UsbPrintString(" :spinss_active_low", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("spi ", FALSE);
+	UsbPrintString(spinss_active_high, FALSE);
+	UsbPrintString(" :spinss_active_high", FALSE);
+	putbyte(USB_INTERFACE, CR_);
 
 	/*12c command + options*/
+	UsbPrintString("i2c ", FALSE);
+	UsbPrintString(i2c_address, FALSE);
+	UsbPrintString(" :select slave address", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("i2c ", FALSE);
+	UsbPrintString(i2c_transmitter, FALSE);
+	UsbPrintString(" :address write mode", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("i2c ", FALSE);
+	UsbPrintString(i2c_access_write, FALSE);
+	UsbPrintString(" :byte write", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("i2c ", FALSE);
+	UsbPrintString(i2c_access_read, FALSE);
+	UsbPrintString(" :byte read", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("i2c ", FALSE);
+	UsbPrintString(i2c_queue_req, FALSE);
+	UsbPrintString(" :print i2c commands in the queue", FALSE);
+	putbyte(USB_INTERFACE, CR_);
+
+	UsbPrintString("i2c ", FALSE);
+	UsbPrintString(i2c_queue_delete, FALSE);
+	UsbPrintString(" :delete i2c commands queue", FALSE);
+	putbyte(USB_INTERFACE, CR_);
 
 	/* End string*/
 	putbyte(USB_INTERFACE, CR_);

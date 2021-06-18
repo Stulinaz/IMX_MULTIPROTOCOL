@@ -51,5 +51,6 @@ void Call_I2cCheckActivation (i2c_error_t *const status_transfer);
 void Call_I2cTransferData(i2c_error_t *const status_transfer, iic_mtdr_cmd_t cmd, uint8_t *const byte,uint8_t dir);
 uint32_t GetTick(void);
 void Call_I2cReset(void);
+void I2cStop(void);
 
 #endif /* IMX_MULTIPROTOCOL_LPI2C_CALLBACK_H_ */

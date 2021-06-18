@@ -23,6 +23,13 @@ IMX RT MCU Embedded contest 2021
 #define TRANSFER_SIZE     64U     /*! Transfer dataSize */
 #define TRANSFER_BAUDRATE 100000U /*! Transfer baudrate - 100k */
 
+typedef enum{
+NSS_ACTIVE_LOW = 0,
+NSS_ACTIVE_HIGH,
+}spi_nss_t;
+
+extern spi_nss_t masterNss;
+
 void LpSpiInit(void);
 void LpSpiStop(void);
 status_t LpspiTransfer(void);

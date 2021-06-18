@@ -163,3 +163,8 @@ void Call_I2cReset(void)
 	/* periph reset*/
 	LPI2C_MasterReset(i2c);
 }
+
+void I2cStop(void)
+{
+	LPI2C_MasterDeinit(II2C_MASTER);
+}

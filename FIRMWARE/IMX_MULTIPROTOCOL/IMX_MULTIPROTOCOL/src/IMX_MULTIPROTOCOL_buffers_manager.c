@@ -169,8 +169,6 @@ uint32_t SetBuffer(comm_inerface_t comm_type)
 			byte = usb_rx_buff[i];
 			putbyte(comm_type,byte);
 		}
-//		usb_comm_type.rx_buff_write_index = 0;
-//		usb_comm_type.rx_buff_read_index  = 0;
 	}
 	return data_len;
 }

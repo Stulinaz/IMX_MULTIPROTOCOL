@@ -22,6 +22,9 @@ USER_I2C_INTERFACE_SELECTED,
 USER_SPI_INTERFACE_SELECTED,
 USER_COMMUNICATION_ABORT,
 
+USER_NSS_ACTIVE_HIGH,
+USER_NSS_ACTIVE_LOW,
+
 USER_SER_SET_BAUDRATE,
 
 USER_I2C_SET_SLAVE_ADDRESS,
@@ -52,9 +55,10 @@ extern const char i2c_transmitter[];
 extern const char i2c_receiver[];
 extern const char i2c_access_write[];
 extern const char i2c_access_read[];
-extern const char i2c_repeat_start[];
 extern const char i2c_queue_req[];
 extern const char i2c_queue_delete[];
+extern const char spinss_active_high[];
+extern const char spinss_active_low[];
 
 command_t Decode  (uint16_t cmd_len, uint8_t *const param);
 uint16_t DecToChar(uint8_t value);
